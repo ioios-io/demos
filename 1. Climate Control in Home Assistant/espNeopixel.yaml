@@ -1,0 +1,227 @@
+substitutions:
+  boardPlatform: ESP8266
+  boardName: d1_mini
+  
+  devicename: plug_neopixel
+  deviceUpper: Plug Neopixel
+  
+  climate: demo_climate
+  climateHeater: demo_heater_output
+  climateTemperature: demo_average_temperature
+
+  encoderPinA: D5
+  encoderPinB: D6
+  encoderSwitch: D7
+  i2cData: D1
+  i2cClock: D2
+
+esphome:
+  name: $devicename
+  platform: $boardPlatform
+  board: $boardName
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+logger:
+ota:
+  password: !secret esphome_ota_password
+  
+i2c:
+  sda: ${i2cData}
+  scl: ${i2cClock}
+  scan: True
+  id: bus_a
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    
+api:
+  password: !secret esphome_api_password
+  services:
+    - service: doorbell
+      then:
+      - light.turn_on:
+          id: ${devicename}_neopixel
+          brightness: 100%
+          red: 100%
+          blue: 0%
+          green: 0%
+          effect: "Knight Rider"
+      - delay: 10s
+      - light.turn_off:
+          id: ${devicename}_neopixel
+    - service: update_climate
+      variables:
+        climate_setpoint: int
+      then:
+      - sensor.rotary_encoder.set_value:
+          id: climate_dial
+          value: !lambda 'return climate_setpoint;'
+          
+      - light.turn_on:
+          id: ${devicename}_neopixel
+          brightness: 90%
+          effect: "Climate Display"
+      - delay: 10s
+      - light.turn_off:
+          id: ${devicename}_neopixel
+          
+switch:
+  - platform: restart
+    name: "ESP Restart ${deviceUpper}"
+    
+sensor:
+  - platform: wifi_signal
+    name: ESP Signal ${deviceUpper}
+    update_interval: 60s
+
+  - platform: uptime
+    name: ESP Uptime ${deviceUpper}
+    update_interval: 60s
+    
+  - platform: sht3xd
+    temperature:
+      name: "${deviceUpper} Temperature"
+      id: ${devicename}_temperature
+    humidity:
+      name: "${deviceUpper} Humidity"
+      id: ${devicename}_humidity
+    address: 0x44
+    update_interval: 15s
+
+  - platform: homeassistant
+    id: climate_current
+    entity_id: sensor.${climateTemperature}
+    internal: true
+
+  - platform: rotary_encoder
+    id: climate_dial
+    pin_a:
+      number: ${encoderPinA}
+      inverted: true
+      mode: INPUT_PULLUP
+    pin_b:
+      number: ${encoderPinB}
+      inverted: true
+      mode: INPUT_PULLUP
+    filters:
+      - debounce: 0.3s
+    resolution: 1
+    min_value: 10
+    max_value: 30
+    on_value:
+      then:
+        - homeassistant.service:
+            service: climate.set_temperature
+            data_template:
+              entity_id: climate.${climate}
+              temperature: "{{ climate_target | int }}"
+            variables:
+              climate_target: !lambda 'return id(climate_dial).state;'
+              
+text_sensor:
+  - platform: homeassistant
+    id: climate_state
+    entity_id: climate.${climate}
+    internal: true
+    
+binary_sensor:
+  - platform: homeassistant
+    id: climate_heater
+    entity_id: switch.${climateHeater}
+    internal: true
+
+  - platform: gpio
+    pin:
+      number: ${encoderSwitch}
+      inverted: true
+      mode: INPUT_PULLUP
+    name: Switch ${deviceUpper}
+    internal: true
+    on_multi_click:
+    - timing:
+        - ON for 0.6s to 3s
+        - OFF for at least 0.3s
+      then:
+        if:
+          condition:
+            lambda: 'return id(climate_state).state == "off";'
+          then:
+            - homeassistant.service:
+                service: climate.turn_on
+                data:
+                  entity_id: climate.${climate}
+          else:
+            - homeassistant.service:
+                service: climate.turn_off
+                data:
+                  entity_id: climate.${climate}
+    - timing:
+        - ON for at most 0.7s
+        - OFF for at least 0.4s
+      then:
+        - light.turn_on:
+            id: ${devicename}_neopixel
+            brightness: 90%
+            effect: "Climate Display"
+        - delay: 10s
+        - light.turn_off:
+            id: ${devicename}_neopixel
+        
+light:
+  - platform: neopixelbus
+    type: GRB
+    pin: RX
+    num_leds: 16
+    id: ${devicename}_neopixel
+    name: "${deviceUpper} Ring"
+    effects:
+      - addressable_rainbow:
+          name: Rainbow
+      - addressable_color_wipe:
+          name: Colour Wipe
+      - addressable_scan:
+          name: Knight Rider
+      - addressable_twinkle:
+      - addressable_fireworks:
+      - addressable_random_twinkle:
+          name: Occasional Twinkle
+          twinkle_probability: 1%
+          progress_interval: 50ms
+      - addressable_lambda:
+          name: "Climate Display"
+          update_interval: 50ms
+          lambda: |-
+            it.all() = ESPColor::BLACK;
+            
+            // GET THE UPDATED CLIMATE SETPOINT VALUE
+            int climate = id(climate_setpoint).state;
+            
+            // MAP THAT VALUE AGAINST THE 16 LEDS (RANGE 10 - 30 DEG C)
+            // FROM ARDUINO MAP FUNCTION: return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+            int outRange = (climate - 10) * (it.size() - 1) / (30 - 10) + 1; 
+            
+            // INVERT IT TO GO CLOCKWISE
+            outRange = it.size() - outRange;
+            for (int i = it.size() - 1; i > outRange - 1; i--) {
+              if(i == 15) it[i] = ESPColor(0, 0, 255);
+              else if(i == 14) it[i] = ESPColor(16, 0, 224);
+              else if(i == 13) it[i] = ESPColor(32, 0, 208);
+              else if(i == 12) it[i] = ESPColor(48, 0, 192);
+              else if(i == 11) it[i] = ESPColor(64, 16, 176);
+              else if(i == 10) it[i] = ESPColor(80, 32, 160);
+              else if(i == 9) it[i] = ESPColor(96, 48, 144);
+              else if(i == 8) it[i] = ESPColor(112, 64, 128);
+              else if(i == 7) it[i] = ESPColor(128, 64, 112);
+              else if(i == 6) it[i] = ESPColor(144, 48, 96);
+              else if(i == 5) it[i] = ESPColor(160, 32, 80);
+              else if(i == 4) it[i] = ESPColor(176, 16, 64);
+              else if(i == 3) it[i] = ESPColor(192, 0, 48);
+              else if(i == 2) it[i] = ESPColor(208, 0, 32);
+              else if(i == 1) it[i] = ESPColor(224, 0, 16);
+              else it[i] = ESPColor(255, 0, 0);
+            }
