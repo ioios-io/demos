@@ -1,0 +1,229 @@
+substitutions:
+  boardPlatform: ESP8266
+  boardName: d1_mini
+  
+  devicename: plug_screen
+  deviceUpper: Plug Screen
+  
+  climate: demo_climate
+  climateHeater: demo_heater_output
+  climateTemperature: demo_average_temperature
+
+  encoderPinA: D5
+  encoderPinB: D6
+  encoderSwitch: D7
+  i2cData: D1
+  i2cClock: D2
+
+esphome:
+  name: $devicename
+  platform: $boardPlatform
+  board: $boardName
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+logger:
+ota:
+  password: !secret esphome_ota_password
+  
+i2c:
+  sda: ${i2cData}
+  scl: ${i2cClock}
+  scan: True
+  id: bus_a
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    
+api:
+  password: !secret esphome_api_password  
+  services:
+    - service: update_climate
+      variables:
+        climate_setpoint: int
+      then:
+        - sensor.rotary_encoder.set_value:
+            id: climate_dial
+            value: !lambda 'return climate_setpoint;'
+    - service: sound_doorbell
+      then:
+        - display.page.show: pageDoorbell
+        - delay: 60s
+        - display.page.show: pageMain
+
+font:
+  - file: "fonts/NewYorkItalic.ttf"
+    id: large_font
+    size: 38
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/SFCompactText.ttf"
+    id: alert_font
+    size: 32
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/SFCompactText.ttf"
+    id: small_font
+    size: 20
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/LiberationMono-Regular.ttf"
+    id: time_font
+    size: 42
+    glyphs: ":/&°0123456789CSante ."
+  - file: "fonts/LiberationMono-Regular.ttf"
+    id: date_font
+    size: 16
+    glyphs: ":/&°0123456789CSante ."
+
+image:
+  - file: "images/heat.png"
+    id: heat_image
+    resize: 16x16
+  - file: "images/tick.png"
+    id: tick_image
+    resize: 16x16
+  - file: "images/off.png"
+    id: off_image
+    resize: 16x16
+  - file: "images/alert.png"
+    id: alert_image
+    resize: 48x48
+  - file: "images/dinner.png"
+    id: dinner_image
+    resize: 48x48
+  - file: "images/door.png"
+    id: door_image
+    resize: 34x48
+  - file: "images/ioios.png"
+    id: ioios_image
+    resize: 48x48
+
+display:
+  - platform: ssd1306_i2c
+    model: "SH1106 128x64"
+    address: 0x3C
+    update_interval: 1s
+    pages:
+      - id: pageMain
+        lambda: |-
+          if (id(climate_state).state == "off") {
+            it.image(56, 0, id(off_image));
+          } else {
+            if (id(climate_heater).state) {
+                it.image(0, 0, id(heat_image));
+            } else {
+                it.image(0, 0, id(tick_image));
+            }
+            it.printf(42, 7, id(small_font), "Set: %.0f°C", id(climate_dial).state);
+          }
+          it.printf(4, 40, id(large_font), "%3.1f°C", id(climate_current).state);
+      - id: pageTime
+        lambda: |-
+          it.strftime(0, 16, id(time_font), "%H:%M", id(homeassistant_time).now());
+          it.strftime(14, 0, id(date_font), "%d/%m/%Y", id(homeassistant_time).now());
+      - id: pageDoorbell
+        lambda: |-
+          it.image(0, 16, id(alert_image));
+          it.image(80, 16, id(door_image));
+          it.printf(10, 7, id(small_font), "Front Door");
+          
+switch:
+  - platform: restart
+    name: "ESP Restart ${deviceUpper}"
+    
+sensor:
+  - platform: wifi_signal
+    name: ESP Signal ${deviceUpper}
+    update_interval: 60s
+
+  - platform: uptime
+    name: ESP Uptime ${deviceUpper}
+    update_interval: 60s
+    
+  - platform: sht3xd
+    temperature:
+      name: "${deviceUpper} Temperature"
+      id: ${devicename}_temperature
+    humidity:
+      name: "${deviceUpper} Humidity"
+      id: ${devicename}_humidity
+    address: 0x44
+    update_interval: 15s
+
+  - platform: homeassistant
+    id: climate_current
+    entity_id: sensor.${climateTemperature}
+    internal: true
+
+  - platform: rotary_encoder
+    id: climate_dial
+    pin_a:
+      number: ${encoderPinA}
+      inverted: true
+      mode: INPUT_PULLUP
+    pin_b:
+      number: ${encoderPinB}
+      inverted: true
+      mode: INPUT_PULLUP
+    filters:
+      - debounce: 0.3s
+    resolution: 1
+    min_value: 10
+    max_value: 30
+    on_value:
+      then:
+        - homeassistant.service:
+            service: climate.set_temperature
+            data_template:
+              entity_id: climate.${climate}
+              temperature: "{{ climate_target | int }}"
+            variables:
+              climate_target: !lambda 'return id(climate_dial).state;'
+              
+text_sensor:
+  - platform: homeassistant
+    id: climate_state
+    entity_id: climate.${climate}
+    internal: true
+    
+binary_sensor:
+  - platform: homeassistant
+    id: climate_heater
+    entity_id: switch.${climateHeater}
+    internal: true
+
+  - platform: gpio
+    pin:
+      number: ${encoderSwitch}
+      inverted: true
+      mode: INPUT_PULLUP
+    name: Switch ${deviceUpper}
+    internal: true
+    on_multi_click:
+    - timing:
+        - ON for 0.6s to 3s
+        - OFF for at least 0.3s
+      then:
+        if:
+          condition:
+            lambda: 'return id(climate_state).state == "off";'
+          then:
+            - homeassistant.service:
+                service: climate.turn_on
+                data:
+                  entity_id: climate.${climate}
+          else:
+            - homeassistant.service:
+                service: climate.turn_off
+                data:
+                  entity_id: climate.${climate}
+                  
+    - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.4s
+      then:
+        - display.page.show: pageTime
+        - delay: 8s
+        - display.page.show: pageMain
