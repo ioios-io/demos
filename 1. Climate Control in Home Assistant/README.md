@@ -75,7 +75,7 @@ sensor:
       demo_climate_setpoint:
         friendly_name: 'Demo Climate Setpoint' 
         unit_of_measurement: '°C'
-        value_template: "{{ state_attr('climate.demo_climate’, 'temperature') | round(0) }}"
+        value_template: "{{ state_attr('climate.demo_climate', 'temperature') | round(0) }}"
 ```
 * Use the min/max sensor with the type 'mean'
 * 1 decimal place precision is plenty fine.
