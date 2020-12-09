@@ -91,7 +91,7 @@ sensor:
     update_interval: 15s
     
   - platform: rotary_encoder
-    id: climate_dial
+    id: rotary_dial
     pin_a:
       number: ${encoderPinA}
       inverted: true
@@ -129,10 +129,10 @@ sensor:
                     entity_id: light.${deviceParent}_lights
                     brightness: "{{ brightness | int }}"
                   variables:
-                    brightness: !lambda 'return id(climate_dial).state;'
+                    brightness: !lambda 'return id(rotary_dial).state;'
               - sensor.template.publish:
                   id: brightness_percent
-                  state: !lambda 'return (id(climate_dial).state / 256) * 100;'
+                  state: !lambda 'return (id(rotary_dial).state / 256) * 100;'
             else:
               - if:
                   condition:
@@ -144,10 +144,10 @@ sensor:
                           entity_id: light.${deviceParent}_lights
                           color_temp: "{{ warmth | int }}"
                         variables:
-                          warmth: !lambda 'return id(climate_dial).state;'
+                          warmth: !lambda 'return id(rotary_dial).state;'
                     - sensor.template.publish:
                         id: warmth_percent
-                        state: !lambda 'return ((id(climate_dial).state - 153) / (465 - 153)) * 100;'
+                        state: !lambda 'return ((id(rotary_dial).state - 153) / (465 - 153)) * 100;'
                   else:
                     - if:
                         condition:
@@ -158,7 +158,7 @@ sensor:
                               id: brightness_percent
                               state: !lambda 'return (id(brightness).state / 256) * 100;'
                           - sensor.rotary_encoder.set_value:
-                              id: climate_dial
+                              id: rotary_dial
                               value: !lambda 'return id(brightness).state;'
 
   - platform: homeassistant
@@ -226,7 +226,7 @@ binary_sensor:
                   then:
                     - logger.log: "Switched to brightness page"
                     - sensor.rotary_encoder.set_value:
-                        id: climate_dial
+                        id: rotary_dial
                         value: !lambda 'return id(brightness).state;'
                   else:
                     - if:
@@ -235,5 +235,5 @@ binary_sensor:
                         then:
                           - logger.log: "Switched to warmth page"
                           - sensor.rotary_encoder.set_value:
-                              id: climate_dial
+                              id: rotary_dial
                               value: !lambda 'return id(warmth).state;'
