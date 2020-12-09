@@ -1,0 +1,23 @@
+light:
+  - platform: group
+    name: Living Room Lights
+    entities:
+      - light.hue_ambiance_spot_1
+      - light.hue_ambiance_spot_2
+      - light.hue_white_spot_1
+      - light.hue_white_spot_2
+      - light.hue_color_lamp_1
+      - light.hue_ambiance_candle_1
+
+sensor:
+  - platform: template
+    sensors: 
+      living_room_warmth:
+        friendly_name: 'Living Room Warmth'
+        value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | round(0) }}"
+        
+  - platform: template
+    sensors: 
+      living_room_brightness:
+        friendly_name: 'Living Room Brightness'
+        value_template: "{{ state_attr('light.living_room_lights', 'brightness') | round(0) }}"

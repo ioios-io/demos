@@ -18,7 +18,7 @@ climate:
 sensor:
   - platform: min_max
     name: “Demo Average Temperature"
-    type: mean #AVERAGES ALL AVAILABLE VALUES
+    type: mean
     round_digits: 1
     entity_ids:
       - sensor.counter_wedge_plus_temperature
