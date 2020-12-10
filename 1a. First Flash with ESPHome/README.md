@@ -3,7 +3,7 @@ If you are following along with our tutorials, you may require some guidance as 
 
 #### Plug in your board
 *If you are using an ioios Pithy device, note that to upload the program you must connect a USB cable to the D1 Mini processor. The plug feature is solely for power.*
-![USB Flashing](https://raw.githubusercontent.com/ioios-io/demos/main/assets/FlashUSBMicro.jpeg)
+![USB Flashing](https://raw.githubusercontent.com/ioios-io/demos/main/assets/FlashUSBMicro.png)
 
 Connect your micro USB cable into your HA machine. If you cannot access a USB port on your HA machine, skip to the next chapter. Sometimes restarting ESPHome form the Supervisor is required for your port to appear but you should be able to see a USB option in the 'Over-The-Air' drop-down box in ESPHome.
 
