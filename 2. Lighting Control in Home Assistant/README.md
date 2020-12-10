@@ -305,24 +305,24 @@ The font file needs to be inside your /config/esphome/font folder which you migh
 
 #### Display
 After defining the specifics of our screen, we create a series of pages. Crucially, the first line of every page adds a unique page tracking ID to the menu_tracker variable. We'll query this value later.
-We use a couple of geometric functions to first create an empty rectangle 100px wide and then to fill that rectangle appropriately (conveniently using percentages).
-NOTE: We use a blank screen as the default first page. This is so the screen is blank until it is in action. Because I use an OLED screen, a blank screen means truly black since there is no backlight behind the screen.
+We use a couple of geometric functions to first create an empty rectangle 102px wide and then to fill that rectangle appropriately (conveniently using percentages).
+NOTE: We use a blank screen as the default first page. This is so the screen is blank until it is in action. Since I am using an OLED screen, a blank screen means truly black because there is no backlight.
 
 #### Sensor: Rotary Encoder
-Firstly, we give it the id of 'rotary_dial' to which we will refer a few times. Secondly, the value range needs to change with the variable being adjusted. For instance, brightness runs between 0 - 255 but the color-temp runs 153 - 465 and we want to constrain the enocder to these limits. Since we cannot alter the standard min_value and max_value values once set, I use a lambda filter to do a little "iffing" in C. We also check what page we are displaying and therefore, what values to use.
-Once we are happy that the changing value is contrained appropriately, inside 'on-value' we need to check the page again in order to activate the correct service in Home Assistant.
+Firstly, we give it the id of 'rotary_dial' to which we will refer a few times. Secondly, the value range needs to change with the variable being adjusted. For instance, brightness runs between 0 - 255 but the color-temp runs 153 - 465 and we want to constrain the encoder to these limits. Since we cannot alter the standard min_value and max_value values once set, I use a lambda filter to do a little "iffing" in C. We also check what page we are displaying and therefore, what values to use.
+Once we are happy that the changing value is constrained appropriately, inside 'on-value' we need to check the page again in order to activate the correct service in Home Assistant.
 If the menu is neither 1 nor 2, we assume the screen is blank and so the final else statement serves to wake up the screen when the dial is turned.
 NOTE: It does not update anything on this first turn on a blank page, it only wakes the screen and then the dial controls whichever variable is on the screen (always brightness with this demo).
 
-One final thing the rotary encoder does is to update the templated percentage sensor for each value. So after the dial has updated Home Assistant, it then calulates an internal percentage value to make the display possible. The same equation is repeated when we define the sensors.
+One final thing that the rotary encoder does is to update the templated percentage sensor for each value. So after the dial has updated Home Assistant, it then calulates an internal percentage value to make the display possible. The same equation is repeated when we define the sensors.
 
 #### Sensor: homeassistant
 We pull both the brightness and warmth values from HA which we created earlier. These values also drive the percentage equations.
 
 #### Binary Sensor: Rotary Encoder
-Finally we need to configure the page scrolling which we accomplish by pressing the rotary. I use a on_multi_click out of habit but in this instance, we are only looking for a short, single press.
+Finally we need to configure the page scrolling which we accomplish by pressing the rotary encoder. I use a 'on_multi_click' out of habit but in this instance, we are only looking for a short, single press.
 On each press we move to the next page of the display and then we wait. As explained at the top, 0.8 seconds is the time I found to be reliable. Any shorter and sometimes the menu tracker had not yet updated.
-So after our 0.8 seconds wait, we check which page we have just displayed and then force the appropriate value into the rotary encoder sensor. This is so the rotary enocder should always be changing the latest value from HA and not just the last value for which it was responsible.
+So after our 0.8 seconds wait, we check which page we have just displayed and then force the appropriate value into the rotary encoder sensor. This is so the rotary encoder should always be changing the latest value from HA and not just the last value for which it was responsible.
 
 ## Conclusion
 As a proof of concept, everything works quite well. There are refinements to be made and with some techniques I learned during this I think it should be possible to combine examples 1 & 2 as a true multi-functional controller. Keep watching for future updates!
