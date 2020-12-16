@@ -5,11 +5,11 @@ If you are following along with our tutorials, you may require some guidance as 
 *If you are using an ioios Pithy device, note that to upload the program you must connect a USB cable to the D1 Mini processor. The plug feature is solely for power.*
 ![USB Flashing](https://raw.githubusercontent.com/ioios-io/demos/main/assets/FlashUSBMicro.png)
 
-Connect your micro USB cable into your HA machine. If you cannot access a USB port on your HA machine, skip to the next chapter. Sometimes restarting ESPHome form the Supervisor is required for your port to appear but you should be able to see a USB option in the 'Over-The-Air' drop-down box in ESPHome.
+Connect your micro USB cable into your HA machine. If you cannot access a USB port on your HA machine, skip to the next chapter. Sometimes restarting ESPHome in the Supervisor menu is required for your port to appear but you should be able to see a USB option in the 'Over-The-Air' drop-down box in ESPHome.
 
 ![ESPHome Dropdown](https://raw.githubusercontent.com/ioios-io/demos/main/assets/ESPHomeDropdown.png)
 
-THen press Upload on the device you want to upload. Nice and easy!
+Then press Upload on the device you want to upload. Nice and easy!
 
 #### Flash with a binary file (.bin)
 If you cannot use the above method or even if you just don't want to, you can upload the binary file from your local machine via a USB cable. You have two options with the first being the more user-friendly by far.
@@ -33,3 +33,8 @@ Once powered up, your device may be automatically discovered by HA and a notific
 ![ESPHome Logs](https://raw.githubusercontent.com/ioios-io/demos/main/assets/ESPHomeLogs.png)
 
 Once you enter your OTA Password (configured in either your secrets file or directly in the ESPHome YAML file) you're connected and ready to go!
+
+```
+John Lumley
+12th December 2020
+```

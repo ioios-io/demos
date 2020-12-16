@@ -667,5 +667,23 @@ light:
             }
 
 ```
+#### That for loop looks a bit repetitive
+Yes and no. I originally wrote it for just the blue and red values which is much tidier. If you look down the first of the three values down the list you can see that it increases by 16 whereas the third value reduces by the same. That can coded on a couple of lines like this.
+```
+            int red = 0;
+            int blue = 0;
+            for (int i = it.size() - 1; i > outRange - 1; i--) {
+              red = (15 - i) * 16;
+              blue = i * 16;
+              
+              it[i] = ESPColor(red, 0, blue);
+            }
+```
+However, I decided that I wanted to introduce some green into the middle colours. I looked at the pattern of the green additions and realised that it could probably be coded too. But decided it was bedtime instead.
+
 ## That's all folks
 ![ioios Pithy Pair](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithysUK.jpeg)
+```
+John Lumley
+29th October 2020
+```

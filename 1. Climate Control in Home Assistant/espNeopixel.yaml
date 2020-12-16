@@ -94,8 +94,8 @@ sensor:
     update_interval: 15s
 
   - platform: homeassistant
-    id: climate_current
-    entity_id: sensor.${climateTemperature}
+    id: climate_setpoint
+    entity_id: sensor.${climate}_climate_setpoint
     internal: true
 
   - platform: rotary_encoder

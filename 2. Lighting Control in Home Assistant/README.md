@@ -328,3 +328,8 @@ So after our 0.8 seconds wait, we check which page we have just displayed and th
 As a proof of concept, everything works quite well. There are refinements to be made and with some techniques I learned during this I think it should be possible to combine examples 1 & 2 as a true multi-functional controller. Keep watching for future updates!
 
 ![ioios Pithy Screen and Pixel](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithyScreenAndPixel.jpeg)
+
+```
+John Lumley
+11th December 2020
+```
