@@ -6,11 +6,17 @@ substitutions:
   deviceUpper: Living Room Screen
   deviceParent: living_room
 
+  wifiPass: !secret wifi_pass
+  wifiSSID: !secret wifi_ssid
+  passOTA: !secret ota_pass
+  passESPH: !secret api_pass
+
   encoderPinA: D5
   encoderPinB: D6
   encoderSwitch: D7
   i2cData: D4
   i2cClock: D3
+
 ###############################################
 esphome:
   name: $devicename
@@ -18,13 +24,13 @@ esphome:
   board: $boardName
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  ssid: ${wifiSSID}
+  password: ${wifiPass}
 
 captive_portal:
 logger:
 ota:
-  password: !secret ota_pass
+  password: ${passOTA}
   
 i2c:
   sda: ${i2cData}
@@ -33,7 +39,7 @@ i2c:
   id: bus_a
 
 api:
-  password: !secret api_pass
+  password: ${passEPSH}
 
 font:
   - file: "fonts/SFCompactText.ttf"
@@ -45,23 +51,23 @@ display:
   - platform: ssd1306_i2c
     model: "SH1106 128x64"
     address: 0x3C
-    update_interval: 1s
+    update_interval: 0.1s
     id: i2cDisplay
     pages:
       - id: pageMain
         lambda: |-
-          id(menu_tracker).publish_state(0);
+          if(id(menu_tracker).state != 0) id(menu_tracker).publish_state(0);
           
       - id: pageBrightness
         lambda: |-
-          id(menu_tracker).publish_state(1);
+          if(id(menu_tracker).state != 1) id(menu_tracker).publish_state(1);
           
           it.rectangle(13, 0, 102, 16);
           it.filled_rectangle(14, 1, id(brightness_percent).state, 14);
           it.printf(17, 39, id(small_font), "Brightness");
       - id: pageWarmth
         lambda: |-
-          id(menu_tracker).publish_state(2);
+          if(id(menu_tracker).state != 2) id(menu_tracker).publish_state(2);
           
           it.rectangle(13, 0, 102, 16);
           it.filled_rectangle(14, 1, id(warmth_percent).state, 14);
@@ -184,7 +190,7 @@ sensor:
       } else {
         return 0;
       }
-    update_interval: 60s
+    update_interval: 20s
     internal: true
     
   - platform: template
@@ -195,7 +201,7 @@ sensor:
       } else {
         return 0;
       }
-    update_interval: 60s
+    update_interval: 20s
     internal: true
     
 binary_sensor:
@@ -206,14 +212,11 @@ binary_sensor:
       mode: INPUT_PULLUP
     name: Switch ${deviceUpper}
     internal: true
-    on_multi_click:
-    - timing:
-        - ON for at most 0.7s
-        - OFF for at least 0.5s
+    on_press:
       then:
         - logger.log: "Next Page"
         - display.page.show_next: i2cDisplay
-        - delay: 0.8s
+        - delay: 0.1s
         - if:
             condition:
               lambda: 'return id(menu_tracker).state == 0;'

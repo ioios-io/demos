@@ -3,17 +3,17 @@
 
 *The files used in the demonstration can be found in our [Github repository](https://github.com/ioios-io/demos).*
 
-This time we’re going to configure a ioios device to become smart light controller. **You do not need the same device to make this work, you can even make this on a breadboard if you want.** You just need an ESP chip, a rotary encoder and a screen. You will also need some smart bulbs, ideally ones which can acheive warm and cold white light.
+This time we’re going to configure a ioios device to become smart light controller. **You do not need the same device to make this work, you can even make this on a breadboard if you want.** You just need an ESP chip, a rotary encoder and a screen. You will also need some smart bulbs, ideally ones which can achieve warm and cold white light - sometimes known as CCT lamps.
 
 #### Limitations & Known Issues
-We will be tied by how Home Assistant deals with groups of lights. This is not meant as a criticism as some of these issues aren't easily remedied. For instance, if your lights are grouped together and you set a scene whereby the different smart bulbs are at different brightness and colour levels, if you try to dim the entire group, they will equalise to the same brightness first before dimming together. However, in practise I've not found this to be much of an annoyance.
+We will be tied by how Home Assistant deals with groups of lights. This is not meant as a criticism as some of these issues aren't easily remedied. For instance, if your lights are grouped together and you set a scene whereby the different smart bulbs are at different brightness and colour levels, if you subsequently try to dim the entire group, they will equalise to the same brightness first before dimming together. However, in practice I've not found this to be much of an annoyance.
 
-We will also be attempting to alter the bulbs' "color-temp" which represents the spectrum of whites commonly availble. If some of your bulbs do not support this feature, they will just be ignored. If none of your bulbs support it, then this probably isn't the example code for you I'm afraid.
+We will also be attempting to alter the bulbs' "color-temp" which represents the spectrum of whites commonly available. If some of your bulbs do not support this feature, they will just be ignored. If none of your bulbs support it, then this probably isn't the example code for you I'm afraid.
 
 ![ioios Pithy Screen Plus](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithyScreenPlus.jpeg)
 
 ## Home Assistant Configuration
-We need to create our group of lights and then we want to create a couple of 'templated' sensors which store key attributes from the light group, namely the brightness and color-temp (which we'll refer to as Warmth).
+We need to create our group of lights and then we want to create a couple of 'templated' sensors which store key attributes from the light group, namely the brightness and color-temp (we'll refer to this as Warmth).
 
 **Additions to your configuration.yaml file.**
 ```
@@ -46,9 +46,7 @@ sensor:
 The template sensors store the attributes taken from the light group as 'living_room_brightness' and 'living_room_warmth' and these are the values we will pass through to ESPHome.
 
 ## ESPHome Configuration
-As with example #1, most of the heavy lifting is done within ESPHome. The primary feat I am aiming to achieve is to have the rotary encoder function differently dependant on which page is being displayed. I have accomplished this by creating an internal sensor called menu_tracker and every time the page is written, we write a value unqiue to each page into this sensor so we can determine which page is being displayed at any time.
-
-** NOTE: In my testing with an ESP8266, I had to delay the checking of this sensor value by 0.8 seconds in order for the value to be relied upon. This delay could probably be reduced considerably if you are using an ESP32. I haven't tested that theory though.**
+As with example #1, most of the heavy lifting is done within ESPHome. The primary feat I am aiming to achieve is to have the rotary encoder function differently dependant on which page is being displayed. I have accomplished this by creating an internal sensor called menu_tracker and every time the page is written, we write a value unique to each page into this sensor so we can determine which page is being displayed at any time.
 
 #### Copy and paste this into ESPHome, replace all default, existing text.
 You need to change the values in substitutions to suit your installation. Ensure the deviceName and deviceUpper is unique for each device.
@@ -63,11 +61,17 @@ substitutions:
   deviceUpper: Living Room Screen
   deviceParent: living_room
 
+  wifiPass: !secret wifi_pass
+  wifiSSID: !secret wifi_ssid
+  passOTA: !secret ota_pass
+  passESPH: !secret api_pass
+
   encoderPinA: D5
   encoderPinB: D6
   encoderSwitch: D7
   i2cData: D4
   i2cClock: D3
+
 ###############################################
 esphome:
   name: $devicename
@@ -75,13 +79,13 @@ esphome:
   board: $boardName
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  ssid: ${wifiSSID}
+  password: ${wifiPass}
 
 captive_portal:
 logger:
 ota:
-  password: !secret ota_pass
+  password: ${passOTA}
   
 i2c:
   sda: ${i2cData}
@@ -90,7 +94,7 @@ i2c:
   id: bus_a
 
 api:
-  password: !secret api_pass
+  password: ${passEPSH}
 
 font:
   - file: "fonts/SFCompactText.ttf"
@@ -102,23 +106,23 @@ display:
   - platform: ssd1306_i2c
     model: "SH1106 128x64"
     address: 0x3C
-    update_interval: 1s
+    update_interval: 0.1s
     id: i2cDisplay
     pages:
       - id: pageMain
         lambda: |-
-          id(menu_tracker).publish_state(0);
+          if(id(menu_tracker).state != 0) id(menu_tracker).publish_state(0);
           
       - id: pageBrightness
         lambda: |-
-          id(menu_tracker).publish_state(1);
+          if(id(menu_tracker).state != 1) id(menu_tracker).publish_state(1);
           
           it.rectangle(13, 0, 102, 16);
           it.filled_rectangle(14, 1, id(brightness_percent).state, 14);
           it.printf(17, 39, id(small_font), "Brightness");
       - id: pageWarmth
         lambda: |-
-          id(menu_tracker).publish_state(2);
+          if(id(menu_tracker).state != 2) id(menu_tracker).publish_state(2);
           
           it.rectangle(13, 0, 102, 16);
           it.filled_rectangle(14, 1, id(warmth_percent).state, 14);
@@ -241,7 +245,7 @@ sensor:
       } else {
         return 0;
       }
-    update_interval: 60s
+    update_interval: 20s
     internal: true
     
   - platform: template
@@ -252,7 +256,7 @@ sensor:
       } else {
         return 0;
       }
-    update_interval: 60s
+    update_interval: 20s
     internal: true
     
 binary_sensor:
@@ -263,14 +267,11 @@ binary_sensor:
       mode: INPUT_PULLUP
     name: Switch ${deviceUpper}
     internal: true
-    on_multi_click:
-    - timing:
-        - ON for at most 0.7s
-        - OFF for at least 0.5s
+    on_press:
       then:
         - logger.log: "Next Page"
         - display.page.show_next: i2cDisplay
-        - delay: 0.8s
+        - delay: 0.1s
         - if:
             condition:
               lambda: 'return id(menu_tracker).state == 0;'
@@ -314,15 +315,15 @@ Once we are happy that the changing value is constrained appropriately, inside '
 If the menu is neither 1 nor 2, we assume the screen is blank and so the final else statement serves to wake up the screen when the dial is turned.
 NOTE: It does not update anything on this first turn on a blank page, it only wakes the screen and then the dial controls whichever variable is on the screen (always brightness with this demo).
 
-One final thing that the rotary encoder does is to update the templated percentage sensor for each value. So after the dial has updated Home Assistant, it then calulates an internal percentage value to make the display possible. The same equation is repeated when we define the sensors.
+One final thing that the rotary encoder does is to update the templated percentage sensor for each value. So after the dial has updated Home Assistant, it then calculates an internal percentage value to make the display possible. The same equation is repeated when we define the sensors.
 
 #### Sensor: homeassistant
 We pull both the brightness and warmth values from HA which we created earlier. These values also drive the percentage equations.
 
 #### Binary Sensor: Rotary Encoder
-Finally we need to configure the page scrolling which we accomplish by pressing the rotary encoder. I use a 'on_multi_click' out of habit but in this instance, we are only looking for a short, single press.
-On each press we move to the next page of the display and then we wait. As explained at the top, 0.8 seconds is the time I found to be reliable. Any shorter and sometimes the menu tracker had not yet updated.
-So after our 0.8 seconds wait, we check which page we have just displayed and then force the appropriate value into the rotary encoder sensor. This is so the rotary encoder should always be changing the latest value from HA and not just the last value for which it was responsible.
+Finally we need to configure the page indexing which we accomplish by pressing the rotary encoder. **If you are using a Pithy, you could use pin TX instead to use the side button as the page changer.**
+On each press we move to the next page of the display and then we wait. 0.1 seconds is the time I found to be reliable. If this value is omitted, in testing I found that sometimes the menu tracker had not yet updated.
+So after our 0.1 seconds wait, we check which page we have just displayed and then force the appropriate value into the rotary encoder sensor. This is so the rotary encoder should always be changing the latest value from HA and not just the last value for which it was responsible.
 
 ## Conclusion
 As a proof of concept, everything works quite well. There are refinements to be made and with some techniques I learned during this I think it should be possible to combine examples 1 & 2 as a true multi-functional controller. Keep watching for future updates!
