@@ -5,15 +5,15 @@
 
 Further to our previous tutorial on controlling Light Groups with a rotary encoder, let's trigger some pre-configured lighting scenes with a single button. In my smart home I have the same 3 lighting scenes for every room. Some rooms have more but by defining scenes for 'Bright', 'Relax' and 'Cosy' I can keep every room consistent in operation.
 
-##An Example
-I have replaced my standard wall switches with a single gang retractive/momentary switch. Some are connected to Sonoffs and some are connected to Shellys. And I want every room to operate in the same following manner for every switch assigned to scene duties.
+#### An Example
+I have replaced my standard wall switches with a single gang retractive/momentary switch. Some are connected to Sonoffs and some are connected to Shellys. And I want every room to operate in the same following manner for every switch assigned to light/scene duties.
 1) Single Short Press - Activate 'Bright' scene
 2) Single Long Press - Turn off light group
 3) Double Short Press - Activate 'Relax' scene
 4) Triple Short Press - Activate 'Cosy' scene
 
 #### Include Command
-Now, I don't want to keep multiple copies of this timing chart in each YAML file for each device. I want to write one YAML and reference it every time I want a binary_sensor to act as another light switch. To do this, we use the include command in ESPHome. This simply prints the contents of the file we specify into your current YAML ••at the place you are in the document, including indentation.**
+Now, I don't want to keep multiple copies of this timing chart in each YAML file for each device. I want to write one YAML and reference it every time I want a binary_sensor to act as another light switch. To do this, we use the include command in ESPHome. This simply prints the contents of the file we specify into your current YAML *at the place you are in the document, including indentation.*
 
 The entire file is an action for the binary_sensor so can be called very easily once you define the basics of your switch, like this...
 ```
