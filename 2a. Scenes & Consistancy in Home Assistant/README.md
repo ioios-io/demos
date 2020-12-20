@@ -77,10 +77,14 @@ on_multi_click:
       data:
         entity_id: light.${deviceParent}_lights
 ```
+
+## Create Your Scenes
+To create the scenes, I've found HA's Scene Editor to be very useful. When programming 6 lights, it's useful to set them with the live preview the editor give you. Ensure your scene names match the convention used above. 
+*i.e. The deviceParent in the ESPHome YAML must match the text before the scene name. So, if deviceParent is bedroom1 then the scenes need to be called bedroom1_bright, bedroom1_relax and bedroom1_cosy.*
+![Home Assistant Scene Editor](https://raw.githubusercontent.com/ioios-io/demos/main/assets/SceneEditor.png)
+
 ## Conclusion
 In practice this means that I have at least 3 light switches in every room and they all operate in the same consistent manner. Every room's light switches all use the one YAML file so updating them all in ESPHome is very fast. I intend to add an action for a extra long press which will turn off the lights after a set period, say 30 minutes. I'm sure you can figure out yourself how to add that function to yours. ;)
-
-![ioios Pithy Screen and Pixel](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithyScreenAndPixel.jpeg)
 
 ```
 John Lumley
