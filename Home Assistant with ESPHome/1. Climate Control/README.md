@@ -10,9 +10,9 @@ This example uses an electric heater for its heat source. This can be adapted to
 In this example we are going to use the following 3 devices:
 1. A **Counter Wedge Plus** - Our premium model made from white oak and aluminium
 2. A **Pithy Screen** - 3D-printed in matt black PLA
-3. A **Pithy Neopixel** - 3D-printed in white PLA
+3. A **Pithy Pixel** - 3D-printed in white PLA
 
-![ioios Devices](https://raw.githubusercontent.com/ioios-io/demos/main/assets/ClimateSetup.jpeg)
+![ioios Devices](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/ClimateSetup.jpeg)
 
 #### IMPORTANT!
 To play along, you’ll need heat source connected to Home Assistant. We use the entity switch.demo_heater_output in the demo which switches our wall heater via a [Shelly1](https://shelly.cloud/products/shelly-1-smart-home-automation-relay/).
@@ -682,7 +682,7 @@ Yes and no. I originally wrote it for just the blue and red values which is much
 However, I decided that I wanted to introduce some green into the middle colours. I looked at the pattern of the green additions and realised that it could probably be coded too. But decided it was bedtime instead.
 
 ## That's all folks
-![ioios Pithy Pair](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithysUK.jpeg)
+![ioios Pithy Pair](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/PithysUK.jpeg)
 ```
 John Lumley
 29th October 2020

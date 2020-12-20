@@ -6,10 +6,10 @@ substitutions:
   deviceUpper: Living Room Screen
   deviceParent: living_room
 
-  wifiPass: !secret wifi_pass
-  wifiSSID: !secret wifi_ssid
-  passOTA: !secret ota_pass
-  passESPH: !secret api_pass
+  wifiSSID: !secret wifiSSID
+  wifiPass: !secret wifiPass
+  passOTA: !secret passOTA
+  passESPH: !secret passESPH
 
   encoderPinA: D5
   encoderPinB: D6
@@ -39,7 +39,7 @@ i2c:
   id: bus_a
 
 api:
-  password: ${passEPSH}
+  password: ${passESPH}
 
 font:
   - file: "fonts/SFCompactText.ttf"

@@ -10,7 +10,7 @@ We will be tied by how Home Assistant deals with groups of lights. This is not m
 
 We will also be attempting to alter the bulbs' "color-temp" which represents the spectrum of whites commonly available. If some of your bulbs do not support this feature, they will just be ignored. If none of your bulbs support it, then this probably isn't the example code for you I'm afraid.
 
-![ioios Pithy Screen Plus](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithyScreenPlus.jpeg)
+![ioios Pithy Screen Plus](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/PithyScreenPlus.jpeg)
 
 ## Home Assistant Configuration
 We need to create our group of lights and then we want to create a couple of 'templated' sensors which store key attributes from the light group, namely the brightness and color-temp (we'll refer to this as Warmth).
@@ -328,7 +328,7 @@ So after our 0.1 seconds wait, we check which page we have just displayed and th
 ## Conclusion
 As a proof of concept, everything works quite well. There are refinements to be made and with some techniques I learned during this I think it should be possible to combine examples 1 & 2 as a true multi-functional controller. Keep watching for future updates!
 
-![ioios Pithy Screen and Pixel](https://raw.githubusercontent.com/ioios-io/demos/main/assets/PithyScreenAndPixel.jpeg)
+![ioios Pithy Screen and Pixel](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/PithyScreenAndPixel.jpeg)
 
 ```
 John Lumley
