@@ -9,30 +9,37 @@ substitutions:
   climateHeater: demo_heater_output
   climateTemperature: demo_average_temperature
 
+  wifiSSID: !secret wifiSSID
+  wifiPass: !secret wifiPass
+  passOTA: !secret passOTA
+  passESPH: !secret passESPH
+
   encoderPinA: D5
   encoderPinB: D6
   encoderSwitch: D7
   i2cData: D1
   i2cClock: D2
 
+####################################################
 esphome:
   name: $devicename
   platform: $boardPlatform
   board: $boardName
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  ssid: ${wifiSSID}
+  password: ${wifiPass}
 
 captive_portal:
 logger:
 ota:
-  password: !secret esphome_ota_password
+  password: ${passOTA}
   
 i2c:
   sda: ${i2cData}
   scl: ${i2cClock}
   scan: True
+  frequency: 200MHz
   id: bus_a
 
 time:
@@ -40,7 +47,7 @@ time:
     id: homeassistant_time
     
 api:
-  password: !secret esphome_api_password  
+  password: ${passESPH} 
   services:
     - service: update_climate
       variables:
@@ -104,7 +111,7 @@ display:
   - platform: ssd1306_i2c
     model: "SH1106 128x64"
     address: 0x3C
-    update_interval: 1s
+    update_interval: 0.2s
     pages:
       - id: pageMain
         lambda: |-
@@ -168,7 +175,7 @@ sensor:
       inverted: true
       mode: INPUT_PULLUP
     filters:
-      - debounce: 0.3s
+      - debounce: 0.2s
     resolution: 1
     min_value: 10
     max_value: 30

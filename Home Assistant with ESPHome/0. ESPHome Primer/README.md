@@ -1,0 +1,3 @@
+## ESPHome Primer
+#### Substitutions & Secrets
+
