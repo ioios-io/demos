@@ -1,5 +1,7 @@
 # Home Assistant & ESPHome
-Starting with a quick primer on a few tricks we'll use in ESPHome.
+
+## Pithy Range Kickstarter Live!
+If you want to get your hands on a Pithy or 3, support us on [Kickstarter](https://www.kickstarter.com/projects/ioios/ioios-the-pithy-range?ref=11yk48)!
 
 ## 1: Climate Control (in Home Assistant with ESPHome)
 #### 1a: First Flash with ESPHome
