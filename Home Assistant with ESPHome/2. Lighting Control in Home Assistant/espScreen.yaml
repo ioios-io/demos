@@ -36,6 +36,7 @@ i2c:
   sda: ${i2cData}
   scl: ${i2cClock}
   scan: True
+  frequency: 200MHz
   id: bus_a
 
 api:
