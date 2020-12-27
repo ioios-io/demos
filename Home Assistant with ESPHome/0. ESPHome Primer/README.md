@@ -5,8 +5,8 @@ In the ESPHome files included with these tutorials, we make use of two features 
 
 #### Secrets
 We use secrets so that we can reference sensitive data stored elsewhere rather than type our Wifi password in plain text in the YAML file.
-Secrets File: `passWIFI; mypassword`
-YAML File: `password: `!secret passWIFI
+Secrets File: `wifiPass: mypassword`
+YAML File: `password: !secret wifiPass`
 
 ESPHome has a built-in Secrets Editor.
 ![ESPHome Secrets Option](https://github.com/ioios-io/demos/raw/main/Home%20Assistant%20with%20ESPHome/assets/ESPHomeSecrets.png)
@@ -30,7 +30,7 @@ esphome:
 ```
 
 ## Combining
-In this example we use secrets within the substitutions! We also define the pin numbers to make it easier to keep track of the differnt functionalities.
+In this example we use secrets within the substitutions! We also define the pin numbers to make it easier to keep track of the different functionalities.
 ```
 substitutions:
   boardPlatform: ESP8266
@@ -51,7 +51,7 @@ substitutions:
   i2cClock: D3
 ```
 ## Conclusion
-So if you've kept up with that, you're hopefully ready to make sense of what follows. Subsitutions make it easier to copy and update big chunks of code without having to go through it all and change references,pins, passwords, etc. 
+So if you've kept up with that, you're hopefully ready to make sense of what follows. Subsitutions make it easier to copy and update big chunks of code without having to go through it all and change references,pins, passwords, etc.
 We can even do some basic switching between options as in this example where we have two input switches (D7 & TX) and we want to specifiy which function each should take. We create another two subsitutions for the function (menu or lights) and specify which switch to use. It is this new value which we use in the `binary_sensor:` section.
 ```
 substitutions:
