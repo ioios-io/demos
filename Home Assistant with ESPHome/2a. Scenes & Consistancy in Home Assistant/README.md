@@ -87,6 +87,8 @@ To create the scenes, I've found HA's Scene Editor to be very useful. When progr
 ## Conclusion
 In practice this means that I have at least 3 light switches in every room and they all operate in the same consistent manner. Every room's light switches all use the one YAML file so updating them all in ESPHome is very fast. I intend to add an action for a extra long press which will turn off the lights after a set period, say 30 minutes. I'm sure you can figure out yourself how to add that function to yours. ;)
 
+___
+
 ```
 John Lumley
 19th December 2020

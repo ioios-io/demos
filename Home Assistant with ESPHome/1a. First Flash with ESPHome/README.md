@@ -37,6 +37,8 @@ Once powered up, your device may be automatically discovered by HA and a notific
 
 Once you enter your OTA Password (configured in either your secrets file or directly in the ESPHome YAML file) you're connected and ready to go!
 
+___
+
 ```
 John Lumley
 12th December 2020

@@ -683,6 +683,9 @@ However, I decided that I wanted to introduce some green into the middle colours
 
 ## That's all folks
 ![ioios Pithy Pair](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/PithysUK.jpeg)
+
+___
+
 ```
 John Lumley
 29th October 2020

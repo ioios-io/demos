@@ -330,6 +330,8 @@ As a proof of concept, everything works quite well. There are refinements to be 
 
 ![ioios Pithy Screen and Pixel](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/PithyScreenAndPixel.jpeg)
 
+___
+
 ```
 John Lumley
 11th December 2020
