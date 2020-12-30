@@ -12,12 +12,12 @@ light:
 sensor:
   - platform: template
     sensors: 
-      living_room_warmth:
+      living_room_lights_warmth:
         friendly_name: 'Living Room Warmth'
         value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | round(0) }}"
         
   - platform: template
     sensors: 
-      living_room_brightness:
+      living_room_lights_brightness:
         friendly_name: 'Living Room Brightness'
         value_template: "{{ state_attr('light.living_room_lights', 'brightness') | round(0) }}"

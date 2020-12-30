@@ -1,0 +1,258 @@
+substitutions:
+  # UNIQUE NAME FOR THE DEVICE
+  devicename: pithy_screen
+  deviceUpper: Pithy Screen
+
+  # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
+  mediaPlayer: living_room_sonos
+  
+  # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
+  switchMenu: ${sideSwitch}
+  switchAction: ${encoderSwitch}
+  
+  # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
+  wifiPass: !secret wifiPass
+  wifiSSID: !secret wifiSSID
+  passOTA: !secret passOTA
+  passESPH: !secret passESPH
+  
+  # ESP DECLARATION
+  boardPlatform: ESP8266
+  boardName: d1_mini
+  
+  # PIN MAPPING. DEFAULTS TO ioios.io PITHY AND COUNTER DEVICES
+  encoderPinA: D5
+  encoderPinB: D6
+  encoderSwitch: D7
+  i2cData: D1
+  i2cClock: D2
+  pirSensor: D3
+  sideSwitch: TX
+  neoPixels: RX
+
+###############################################################################
+# WHOA WHERE ARE YOU GOING? GO STEADY BEYOND HERE, THIS IS THE BREAKABLE BIT! #
+###############################################################################
+
+esphome:
+  name: ${devicename}
+  platform: ${boardPlatform}
+  board: ${boardName}
+  on_boot:
+    priority: -100
+    then:
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: OFF
+      - wait_until:
+          api.connected
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: ON
+
+wifi:
+  ssid: ${wifiSSID}
+  password: ${wifiPass}
+
+captive_portal:
+logger:
+ota:
+  password: ${passOTA}
+  
+i2c:
+  sda: ${i2cData}
+  scl: ${i2cClock}
+  scan: True
+  frequency: 200MHz
+  id: bus_a
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    
+api:
+  password: ${passESPH} 
+
+font:
+  - file: "fonts/Paul.ttf"
+    id: title_font
+    size: 16
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/Paul.ttf"
+    id: standard_font
+    size: 26
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+
+image:
+  - file: "images/play.png"
+    id: play_image
+    resize: 48x48
+  - file: "images/pause.png"
+    id: pause_image
+    resize: 48x48
+  - file: "images/volume.png"
+    id: volume_image
+    resize: 16x16
+  - file: "images/ioios.png"
+    id: ioios_image
+    resize: 48x48
+  - file: "images/ha.png"
+    id: ha_image
+    resize: 48x48
+    
+display:
+  - platform: ssd1306_i2c
+    model: "SH1106 128x64"
+    address: 0x3C
+    update_interval: 0.2s
+    pages:
+      - id: pageMedia
+        lambda: |-
+          if (!id(api_connected).state) {
+            it.printf(64, 0, id(title_font), TextAlign::TOP_CENTER, "CONNECTING");
+            
+            it.image(8, 16, id(ioios_image));
+            it.image(72, 16, id(ha_image));
+          } else {
+            if (id(media_state).state == "playing" || id(media_state).state == "paused") {
+              if (id(media_state).state == "playing") {
+                  it.image(0, 16, id(play_image));
+                  it.printf(40, 40, id(standard_font), "PLAYING");
+              } else {
+                  it.image(0, 16, id(pause_image));
+                  it.printf(40, 40, id(standard_font), "PAUSED");
+              }
+              it.image(0, 0, id(volume_image));
+              it.rectangle(20, 0, 102, 16);
+              it.filled_rectangle(21, 1, id(media_volume).state, 14);
+            }
+            
+          }
+
+globals:
+   - id: new_volume
+     type: float
+     initial_value: '0'
+
+switch:
+  - platform: restart
+    name: "ESP Restart ${deviceUpper}"
+
+text_sensor:
+  - platform: homeassistant
+    id: media_state
+    entity_id: media_player.${mediaPlayer}
+    internal: true
+
+sensor:
+  - platform: wifi_signal
+    name: ESP Signal ${deviceUpper}
+    update_interval: 60s
+
+  - platform: uptime
+    name: ESP Uptime ${deviceUpper}
+    update_interval: 60s
+    
+  - platform: sht3xd
+    temperature:
+      name: "${deviceUpper} Temperature"
+      id: ${devicename}_temperature
+    humidity:
+      name: "${deviceUpper} Humidity"
+      id: ${devicename}_humidity
+    address: 0x44
+    update_interval: 15s
+
+  - platform: homeassistant
+    id: media_volume
+    entity_id: sensor.${mediaPlayer}_volume
+    internal: true
+    on_value:
+      then:
+        - sensor.rotary_encoder.set_value:
+            id: media_dial
+            value: !lambda 'return x;'
+            
+  - platform: rotary_encoder
+    id: media_dial
+    pin_a:
+      number: ${encoderPinA}
+      inverted: true
+      mode: INPUT_PULLUP
+    pin_b:
+      number: ${encoderPinB}
+      inverted: true
+      mode: INPUT_PULLUP
+    filters:
+      - debounce: 0.2s
+    resolution: 1
+    min_value: 0
+    max_value: 100
+    on_value:
+      - then:
+          - globals.set:
+              id: new_volume
+              value: !lambda 'return id(media_dial).state / 100;'
+          - homeassistant.service:
+              service: media_player.volume_set
+              data:
+                entity_id: media_player.${mediaPlayer}
+                volume_level: !lambda 'return id(new_volume);'
+          
+
+binary_sensor:
+  - platform: template
+    id: api_connected
+
+  - platform: gpio
+    pin:
+      number: ${switchAction}
+      inverted: true
+      mode: INPUT_PULLUP
+    name: Action ${deviceUpper}
+    internal: true
+    on_multi_click:
+    - timing:
+      - ON for at most 1s
+      - OFF for at most 1s
+      - ON for at most 1s
+      - OFF for at least 0.2s
+      then:
+        - logger.log: "Double Click"
+        - homeassistant.service:
+            service: media_player.media_next_track
+            data_template:
+              entity_id: media_player.${mediaPlayer}
+    - timing:
+      - ON for 0.6s to 3s
+      - OFF for at least 0.1s
+      then:
+        - logger.log: "Long Click"
+        - homeassistant.service:
+            service: media_player.toggle
+            data_template:
+              entity_id: media_player.${mediaPlayer}
+    - timing:
+      - ON for at most 0.5s
+      - OFF for at least 0.4s
+      then:
+        - logger.log: "Single Click"
+        - homeassistant.service:
+            service: media_player.media_play_pause
+            data_template:
+              entity_id: media_player.${mediaPlayer}
+        
+  - platform: gpio
+    pin:
+      number: ${switchMenu}
+      inverted: true
+      mode: INPUT_PULLUP
+    name: Menu ${deviceUpper}
+    internal: true
+    on_multi_click:
+    - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.4s
+      then:
+        - delay: 8s
+        - display.page.show: pageMedia

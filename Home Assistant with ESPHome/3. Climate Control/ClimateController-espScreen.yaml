@@ -25,6 +25,17 @@ esphome:
   name: $devicename
   platform: $boardPlatform
   board: $boardName
+  on_boot:
+    priority: 250
+    then:
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: OFF
+      - wait_until:
+          api.connected
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: ON
 
 wifi:
   ssid: ${wifiSSID}
@@ -115,17 +126,29 @@ display:
     pages:
       - id: pageMain
         lambda: |-
-          if (id(climate_state).state == "off") {
-            it.image(56, 0, id(off_image));
+          if (!id(api_connected).state){
+            // Little animation before API is online
+            it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "Connecting...");
+            it.filled_circle(64, 40, 20);
+            it.filled_circle(64, 40, 15, COLOR_OFF);
+            unsigned char wii = floor(id(wi)/2);
+            if(wii > 0 && wii < 5) it.filled_rectangle(65, 20, 20, 21, COLOR_OFF);
+            if(wii > 1 && wii < 6) it.filled_rectangle(65, 40, 20, 21, COLOR_OFF);
+            if(wii > 2 && wii < 7) it.filled_rectangle(44, 40, 21, 21, COLOR_OFF);
+            if(wii > 3 && wii < 8) it.filled_rectangle(44, 20, 21, 21, COLOR_OFF);
           } else {
-            if (id(climate_heater).state) {
-                it.image(0, 0, id(heat_image));
+            if (id(climate_state).state == "off") {
+              it.image(56, 0, id(off_image));
             } else {
-                it.image(0, 0, id(tick_image));
+              if (id(climate_heater).state) {
+                  it.image(0, 0, id(heat_image));
+              } else {
+                  it.image(0, 0, id(tick_image));
+              }
+              it.printf(42, 7, id(small_font), "Set: %.0f°C", id(climate_dial).state);
             }
-            it.printf(42, 7, id(small_font), "Set: %.0f°C", id(climate_dial).state);
+            it.printf(4, 40, id(large_font), "%3.1f°C", id(climate_current).state);
           }
-          it.printf(4, 40, id(large_font), "%3.1f°C", id(climate_current).state);
       - id: pageTime
         lambda: |-
           it.strftime(0, 16, id(time_font), "%H:%M", id(homeassistant_time).now());
@@ -135,7 +158,40 @@ display:
           it.image(0, 16, id(alert_image));
           it.image(80, 16, id(door_image));
           it.printf(10, 7, id(small_font), "Front Door");
-          
+
+globals:
+# Screensaver
+   - id: ss_x
+     type: signed char
+     initial_value: '0'
+
+   - id: ss_y
+     type: signed char
+     initial_value: '0'
+
+   - id: ss_vx
+     type: signed char
+     initial_value: '1'
+
+   - id: ss_vy
+     type: signed char
+     initial_value: '1'
+     
+   - id: wi
+     type: unsigned char
+     initial_value: '0'
+
+interval:
+# Screen saver logic
+  - interval: 0.2s
+    then:
+      - lambda: |-
+          id(ss_x) += id(ss_vx);
+          id(ss_y) += id(ss_vy);
+          if(id(ss_x)>37 || id(ss_x)<1) id(ss_vx) *= -1;
+          if(id(ss_y)>31 || id(ss_y)<-5) id(ss_vy) *= -1;
+          id(wi) = ++id(wi) > 15 ? 0 : id(wi);
+
 switch:
   - platform: restart
     name: "ESP Restart ${deviceUpper}"
@@ -196,6 +252,9 @@ text_sensor:
     internal: true
     
 binary_sensor:
+  - platform: template
+    id: api_connected
+
   - platform: homeassistant
     id: climate_heater
     entity_id: switch.${climateHeater}

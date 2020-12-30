@@ -1,4 +1,4 @@
-## Example #1: Climate Control
+## Example #3: Climate Control
 #### Using Home Assistant & ESPHome
 
 *The files used in the demonstration can be found in our [Github repository](https://github.com/ioios-io/demos).*

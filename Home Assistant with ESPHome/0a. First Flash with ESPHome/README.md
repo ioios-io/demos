@@ -1,4 +1,4 @@
-## Example 1a: First Flash with ESPHome
+## First Flash with ESPHome
 If you are following along with our tutorials, you may require some guidance as to how to get your ESPHome yaml onto your device. Well, you're in luck!
 
 #### Plug in your board

@@ -1,27 +1,54 @@
 substitutions:
+  # UNIQUE NAME FOR THE DEVICE
+  devicename: pithy_screen
+  deviceUpper: Pithy Screen
+
+  # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
+  lightGroup: living_room
+  
+  # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
+  switchMenu: ${sideSwitch}
+  switchAction: ${encoderSwitch}
+  
+  # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
+  wifiPass: !secret wifiPass
+  wifiSSID: !secret wifiSSID
+  passOTA: !secret passOTA
+  passESPH: !secret passESPH
+  
+  # ESP DECLARATION
   boardPlatform: ESP8266
   boardName: d1_mini
   
-  devicename: living_room_pithy_screen
-  deviceUpper: Living Room Screen
-  deviceParent: living_room
-
-  wifiSSID: !secret wifiSSID
-  wifiPass: !secret wifiPass
-  passOTA: !secret passOTA
-  passESPH: !secret passESPH
-
+  # PIN MAPPING. DEFAULTS TO ioios.io PITHY AND COUNTER DEVICES
   encoderPinA: D5
   encoderPinB: D6
   encoderSwitch: D7
-  i2cData: D4
-  i2cClock: D3
+  i2cData: D1
+  i2cClock: D2
+  pirSensor: D3
+  sideSwitch: TX
+  neoPixels: RX
 
-###############################################
+###############################################################################
+# WHOA WHERE ARE YOU GOING? GO STEADY BEYOND HERE, THIS IS THE BREAKABLE BIT! #
+###############################################################################
+
 esphome:
-  name: $devicename
-  platform: $boardPlatform
-  board: $boardName
+  name: ${devicename}
+  platform: ${boardPlatform}
+  board: ${boardName}
+  on_boot:
+    priority: -100
+    then:
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: OFF
+      - wait_until:
+          api.connected
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: ON
 
 wifi:
   ssid: ${wifiSSID}
@@ -39,14 +66,36 @@ i2c:
   frequency: 200MHz
   id: bus_a
 
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    
 api:
-  password: ${passESPH}
+  password: ${passESPH} 
 
 font:
-  - file: "fonts/SFCompactText.ttf"
-    id: small_font
-    size: 18
+  - file: "fonts/Paul.ttf"
+    id: title_font
+    size: 16
     glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/Paul.ttf"
+    id: standard_font
+    size: 26
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+
+image:
+  - file: "images/play.png"
+    id: warmth_image
+    resize: 48x48
+  - file: "images/pause.png"
+    id: brightness_image
+    resize: 48x48
+  - file: "images/ioios.png"
+    id: ioios_image
+    resize: 48x48
+  - file: "images/ha.png"
+    id: ha_image
+    resize: 48x48
 
 display:
   - platform: ssd1306_i2c
@@ -57,7 +106,14 @@ display:
     pages:
       - id: pageMain
         lambda: |-
-          if(id(menu_tracker).state != 0) id(menu_tracker).publish_state(0);
+          if (!id(api_connected).state) {
+            it.printf(64, 0, id(title_font), TextAlign::TOP_CENTER, "CONNECTING");
+            
+            it.image(8, 16, id(ioios_image));
+            it.image(72, 16, id(ha_image));
+          } else {
+            if(id(menu_tracker).state != 0) id(menu_tracker).publish_state(0);
+          }
           
       - id: pageBrightness
         lambda: |-
@@ -65,14 +121,14 @@ display:
           
           it.rectangle(13, 0, 102, 16);
           it.filled_rectangle(14, 1, id(brightness_percent).state, 14);
-          it.printf(17, 39, id(small_font), "Brightness");
+          it.printf(17, 39, id(standard_font), "Brightness");
       - id: pageWarmth
         lambda: |-
           if(id(menu_tracker).state != 2) id(menu_tracker).publish_state(2);
           
           it.rectangle(13, 0, 102, 16);
           it.filled_rectangle(14, 1, id(warmth_percent).state, 14);
-          it.printf(32, 39, id(small_font), "Warmth");
+          it.printf(32, 39, id(standard_font), "Warmth");
 
 switch:
   - platform: restart
@@ -108,7 +164,7 @@ sensor:
       inverted: true
       mode: INPUT_PULLUP
     filters:
-      - debounce: 0.3s
+      - debounce: 0.1s
       - lambda: |-
           if(id(menu_tracker).state == 1) {
             if (x < 0.0) return 0.0;
@@ -133,7 +189,7 @@ sensor:
               - homeassistant.service:
                   service: light.turn_on
                   data_template:
-                    entity_id: light.${deviceParent}_lights
+                    entity_id: light.${lightGroup}
                     brightness: "{{ brightness | int }}"
                   variables:
                     brightness: !lambda 'return id(rotary_dial).state;'
@@ -148,7 +204,7 @@ sensor:
                     - homeassistant.service:
                         service: light.turn_on
                         data_template:
-                          entity_id: light.${deviceParent}_lights
+                          entity_id: light.${lightGroup}
                           color_temp: "{{ warmth | int }}"
                         variables:
                           warmth: !lambda 'return id(rotary_dial).state;'
@@ -170,13 +226,13 @@ sensor:
 
   - platform: homeassistant
     id: brightness
-    entity_id: sensor.${deviceParent}_brightness
-    internal: true
+    entity_id: sensor.${lightGroup}_brightness
+    force_update: true
 
   - platform: homeassistant
     id: warmth
-    entity_id: sensor.${deviceParent}_warmth
-    internal: true
+    entity_id: sensor.${lightGroup}_warmth
+    force_update: true
     
   - platform: template
     name: "Menu Sensor"
@@ -206,12 +262,15 @@ sensor:
     internal: true
     
 binary_sensor:
+  - platform: template
+    id: api_connected
+
   - platform: gpio
     pin:
-      number: ${encoderSwitch}
+      number: ${switchMenu}
       inverted: true
       mode: INPUT_PULLUP
-    name: Switch ${deviceUpper}
+    name: Menu ${deviceUpper}
     internal: true
     on_press:
       then:
