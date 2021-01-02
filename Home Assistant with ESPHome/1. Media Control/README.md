@@ -24,6 +24,7 @@ sensor:
 The value `living_room_sonos` should be replaced with the same value you supplied to ESPHome as `mediaPlayer`.
 **IMPORTANT!** The sensor name **must** be the media_player name with `_volume` on the end.
 
+![ioios Pithy Screen Media Page](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/MediaPage.jpeg)
 ___
 
 ```
