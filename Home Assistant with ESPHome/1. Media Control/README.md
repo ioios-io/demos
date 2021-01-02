@@ -8,7 +8,7 @@ This code provides an extra control interface for any media player in Home Assis
 It works for either sound or video media players and is only intended as a handy additional interface.
 
 ## ESPHome Substitutions
-Other than standard device names and wifi credentials, the only value you need to supply is `mediaPlayer` which should filled in with which ever `media_player` in Home Assistant you wish to control.<br>
+Other than standard device names and wifi credentials, the only value you need to supply is `mediaPlayer` which should be whichever `media_player` in Home Assistant you wish to control.<br>
 For example, `media_player: living_room_sonos` would mean we just enter the value `living_room_sonos`. It could be a Smart TV or a Sonos Speaker as in my case but it could be anything with play, pause and volume controls.
 ## Home Assistant
 We need to add one `sensor` to your Home Assistant configuration to provide the volume as a percentage.
