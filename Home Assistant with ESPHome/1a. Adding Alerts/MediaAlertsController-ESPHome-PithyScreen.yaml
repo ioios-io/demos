@@ -10,6 +10,9 @@ substitutions:
   switchMenu: ${sideSwitch}
   switchAction: ${encoderSwitch}
   
+  # CUSTOM OPTIONS
+  alertTimeout: 30s
+
   # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
   wifiPass: !secret wifiPass
   wifiSSID: !secret wifiSSID
@@ -72,18 +75,46 @@ time:
     
 api:
   password: ${passESPH} 
+  services:
+    - service: sound_doorbell
+      then:
+        - display.page.show: pageDoorbell
+        - delay: ${alertTimeout}
+        - display.page.show: pageMedia
+    - service: sound_dinnertime
+      then:
+        - display.page.show: pageDinnerTime
+        - delay: ${alertTimeout}
+        - display.page.show: pageMedia
 
 font:
-  - file: "fonts/Paul.ttf"
+  - file: "fonts/LiberationSans-Regular.ttf"
     id: title_font
+    size: 12
+    glyphs: ":/HTPS"
+  - file: "fonts/LiberationSans-Bold.ttf"
+    id: title_font_bold
     size: 16
-    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+    glyphs: "ios."
+  - file: "fonts/Paul.ttf"
+    id: small_font
+    size: 16
+    glyphs: ":!0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
   - file: "fonts/Paul.ttf"
     id: standard_font
     size: 26
     glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
 
 image:
+  - file: "images/alert.png"
+    id: alert_image
+    resize: 48x48
+  - file: "images/dinner.png"
+    id: dinner_image
+    resize: 48x48
+  - file: "images/door.png"
+    id: door_image
+    resize: 34x48
   - file: "images/play.png"
     id: play_image
     resize: 48x48
@@ -99,7 +130,7 @@ image:
   - file: "images/ha.png"
     id: ha_image
     resize: 48x48
-    
+
 display:
   - platform: ssd1306_i2c
     model: "SH1106 128x64"
@@ -109,10 +140,11 @@ display:
       - id: pageMedia
         lambda: |-
           if (!id(api_connected).state) {
-            it.printf(64, 0, id(title_font), TextAlign::TOP_CENTER, "CONNECTING");
+            it.printf(12, 2, id(title_font), TextAlign::TOP_LEFT, "HTTPS://");
+            it.printf(124, 0, id(title_font_bold), TextAlign::TOP_RIGHT, "ioios.io");
             
-            it.image(8, 16, id(ioios_image));
-            it.image(72, 16, id(ha_image));
+            it.image(8, 16, id(ha_image));
+            it.image(72, 16, id(ioios_image));
           } else {
             if (id(media_state).state == "playing" || id(media_state).state == "paused") {
               if (id(media_state).state == "playing") {
@@ -128,11 +160,21 @@ display:
             }
             
           }
+      - id: pageDoorbell
+        lambda: |-
+          it.image(0, 16, id(alert_image));
+          it.image(80, 16, id(door_image));
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "FRONT DOOR");
+      - id: pageDinnerTime
+        lambda: |-
+          it.image(0, 16, id(alert_image));
+          it.image(72, 16, id(dinner_image));
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "DINNER TIME");
 
 globals:
-   - id: new_volume
-     type: float
-     initial_value: '0'
+  - id: new_volume
+    type: float
+    initial_value: '0'
 
 switch:
   - platform: restart

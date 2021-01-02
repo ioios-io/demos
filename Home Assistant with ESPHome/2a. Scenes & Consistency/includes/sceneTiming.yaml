@@ -1,0 +1,45 @@
+on_multi_click:
+- timing:
+    - ON for at most 0.6s
+    - OFF for at least 0.6s
+  then:
+    - logger.log: "Single Clicked"
+    - homeassistant.service:
+        service: scene.turn_on
+        data:
+          entity_id: scene.${lightGroup}_bright
+- timing:
+    - ON for at most 0.6s
+    - OFF for at most 0.5s
+    - ON for at most 0.6s
+    - OFF for at least 0.6s
+  then:
+    - logger.log: "Double Clicked"
+    - homeassistant.service:
+        service: scene.turn_on
+        data:
+          entity_id: scene.${lightGroup}_relax
+          transition: "5"
+- timing:
+    - ON for at most 0.6s
+    - OFF for at most 0.5s
+    - ON for at most 0.6s
+    - OFF for at most 0.5s
+    - ON for at most 0.6s
+    - OFF for at least 0.6s
+  then:
+    - logger.log: "Triple Clicked"
+    - homeassistant.service:
+        service: scene.turn_on
+        data:
+          entity_id: scene.${lightGroup}_cosy
+          transition: "5"
+- timing:
+    - ON for 0.8s to 5s
+    - OFF for at least 0.3s
+  then:
+   - logger.log: "Long Press for Lights Off"
+   - homeassistant.service:
+      service: light.turn_off
+      data:
+        entity_id: light.${lightGroup}_lights
