@@ -127,10 +127,10 @@ image:
     resize: 16x16
   - file: "images/play.png"
     id: play_image
-    resize: 48x48
+    resize: 48x34
   - file: "images/pause.png"
     id: pause_image
-    resize: 48x48
+    resize: 48x34
   - file: "images/volume.png"
     id: volume_image
     resize: 16x16
@@ -161,11 +161,11 @@ display:
           } else {
             if (id(media_state).state == "playing" || id(media_state).state == "paused") {
               if (id(media_state).state == "playing") {
-                  it.image(0, 16, id(play_image));
-                  it.printf(40, 40, id(standard_font), "PLAYING");
+                  it.image(4, 24, id(play_image));
+                  it.printf(40, 40, id(standard_font), "Playing");
               } else {
-                  it.image(0, 16, id(pause_image));
-                  it.printf(40, 40, id(standard_font), "PAUSED");
+                  it.image(4, 24, id(pause_image));
+                  it.printf(40, 40, id(standard_font), "Paused");
               }
               it.image(0, 0, id(volume_image));
               it.rectangle(20, 0, 102, 16);
