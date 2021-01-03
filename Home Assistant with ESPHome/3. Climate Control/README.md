@@ -47,9 +47,9 @@ Use template sensor to grab the climate’s setpoint.
 ```
 climate:
   - platform: generic_thermostat
-    name: Demo Climate
-    heater: switch.demo_heater_output
-    target_sensor: sensor.demo_average_temperature
+    name: Living Room
+    heater: switch.living_room_heater_output
+    target_sensor: sensor.living_room_average_temperature
     min_temp: 10
     max_temp: 30
     target_temp: 16
