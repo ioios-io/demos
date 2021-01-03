@@ -1,26 +1,46 @@
 substitutions:
-  boardPlatform: ESP8266
-  boardName: d1_mini
-  
+  # UNIQUE NAME FOR THE DEVICE
   devicename: plug_screen
   deviceUpper: Plug Screen
   
-  climate: demo_climate
-  climateHeater: demo_heater_output
-  climateTemperature: demo_average_temperature
+  # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
+  climate: living_room
+  climateHeater: living_room_heater_output
+  climateTemperature: living_room_average_temperature
 
-  wifiSSID: !secret wifiSSID
+  # CUSTOM OPTIONS
+  alertTimeout: 30s
+  climateLower: '10'
+  climateUpper: '30'
+
+  # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
+  switchMenu: ${sideSwitch}
+  switchAction: ${encoderSwitch}
+  
+  # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
   wifiPass: !secret wifiPass
+  wifiSSID: !secret wifiSSID
   passOTA: !secret passOTA
   passESPH: !secret passESPH
-
+  
+  # ESP DECLARATION
+  boardPlatform: ESP8266
+  boardName: d1_mini
+  
+  # PIN MAPPING. DEFAULTS TO ioios.io PITHY AND COUNTER DEVICES
   encoderPinA: D5
   encoderPinB: D6
   encoderSwitch: D7
   i2cData: D1
   i2cClock: D2
+  pirSensor: D3
+  sideSwitch: TX
+  neoPixels: RX
 
-####################################################
+###############################################################################
+# WHOA WHERE ARE YOU GOING? GO STEADY BEYOND HERE, THIS IS THE BREAKABLE BIT! #
+###############################################################################
+
 esphome:
   name: $devicename
   platform: $boardPlatform
@@ -60,40 +80,34 @@ time:
 api:
   password: ${passESPH} 
   services:
-    - service: update_climate
-      variables:
-        climate_setpoint: int
-      then:
-        - sensor.rotary_encoder.set_value:
-            id: climate_dial
-            value: !lambda 'return climate_setpoint;'
     - service: sound_doorbell
       then:
         - display.page.show: pageDoorbell
-        - delay: 60s
-        - display.page.show: pageMain
+        - delay: ${alertTimeout}
+        - display.page.show: pageMedia
+    - service: sound_dinnertime
+      then:
+        - display.page.show: pageDinnerTime
+        - delay: ${alertTimeout}
+        - display.page.show: pageMedia
 
 font:
-  - file: "fonts/NewYorkItalic.ttf"
+  - file: "fonts/LiberationSans-Regular.ttf"
+    id: title_font
+    size: 12
+    glyphs: ":/HTPS"
+  - file: "fonts/LiberationSans-Bold.ttf"
+    id: title_font_bold
+    size: 16
+    glyphs: "ios."
+  - file: "fonts/LiberationSans-Bold.ttf"
+    id: small_font
+    size: 16
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/LiberationSans-Regular.ttf"
     id: large_font
     size: 38
     glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
-  - file: "fonts/SFCompactText.ttf"
-    id: alert_font
-    size: 32
-    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
-  - file: "fonts/SFCompactText.ttf"
-    id: small_font
-    size: 20
-    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
-  - file: "fonts/LiberationMono-Regular.ttf"
-    id: time_font
-    size: 42
-    glyphs: ":/&°0123456789CSante ."
-  - file: "fonts/LiberationMono-Regular.ttf"
-    id: date_font
-    size: 16
-    glyphs: ":/&°0123456789CSante ."
 
 image:
   - file: "images/heat.png"
@@ -117,80 +131,50 @@ image:
   - file: "images/ioios.png"
     id: ioios_image
     resize: 48x48
+  - file: "images/ha.png"
+    id: ha_image
+    resize: 48x48
 
 display:
   - platform: ssd1306_i2c
     model: "SH1106 128x64"
     address: 0x3C
     update_interval: 0.2s
+    id: i2cDisplay
     pages:
-      - id: pageMain
+      - id: pageMedia
         lambda: |-
-          if (!id(api_connected).state){
-            // Little animation before API is online
-            it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "Connecting...");
-            it.filled_circle(64, 40, 20);
-            it.filled_circle(64, 40, 15, COLOR_OFF);
-            unsigned char wii = floor(id(wi)/2);
-            if(wii > 0 && wii < 5) it.filled_rectangle(65, 20, 20, 21, COLOR_OFF);
-            if(wii > 1 && wii < 6) it.filled_rectangle(65, 40, 20, 21, COLOR_OFF);
-            if(wii > 2 && wii < 7) it.filled_rectangle(44, 40, 21, 21, COLOR_OFF);
-            if(wii > 3 && wii < 8) it.filled_rectangle(44, 20, 21, 21, COLOR_OFF);
+          if (!id(api_connected).state) {
+            it.printf(12, 2, id(title_font), TextAlign::TOP_LEFT, "HTTPS://");
+            it.printf(124, 0, id(title_font_bold), TextAlign::TOP_RIGHT, "ioios.io");
+            
+            it.image(8, 16, id(ha_image));
+            it.image(72, 16, id(ioios_image));
           } else {
             if (id(climate_state).state == "off") {
               it.image(56, 0, id(off_image));
             } else {
-              if (id(climate_heater).state) {
+              if (id(climate_output).state) {
                   it.image(0, 0, id(heat_image));
               } else {
                   it.image(0, 0, id(tick_image));
               }
-              it.printf(42, 7, id(small_font), "Set: %.0f°C", id(climate_dial).state);
+              it.printf(125, 0, id(small_font), TextAlign::TOP_RIGHT, "Set: %.0f°C", id(rotary_dial).state);
             }
-            it.printf(4, 40, id(large_font), "%3.1f°C", id(climate_current).state);
+            it.printf(64, 64, id(large_font), TextAlign::BOTTOM_CENTER, "%3.1f°C", id(climate_current).state);
           }
-      - id: pageTime
-        lambda: |-
-          it.strftime(0, 16, id(time_font), "%H:%M", id(homeassistant_time).now());
-          it.strftime(14, 0, id(date_font), "%d/%m/%Y", id(homeassistant_time).now());
+      
       - id: pageDoorbell
         lambda: |-
           it.image(0, 16, id(alert_image));
           it.image(80, 16, id(door_image));
-          it.printf(10, 7, id(small_font), "Front Door");
-
-globals:
-# Screensaver
-   - id: ss_x
-     type: signed char
-     initial_value: '0'
-
-   - id: ss_y
-     type: signed char
-     initial_value: '0'
-
-   - id: ss_vx
-     type: signed char
-     initial_value: '1'
-
-   - id: ss_vy
-     type: signed char
-     initial_value: '1'
-     
-   - id: wi
-     type: unsigned char
-     initial_value: '0'
-
-interval:
-# Screen saver logic
-  - interval: 0.2s
-    then:
-      - lambda: |-
-          id(ss_x) += id(ss_vx);
-          id(ss_y) += id(ss_vy);
-          if(id(ss_x)>37 || id(ss_x)<1) id(ss_vx) *= -1;
-          if(id(ss_y)>31 || id(ss_y)<-5) id(ss_vy) *= -1;
-          id(wi) = ++id(wi) > 15 ? 0 : id(wi);
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "FRONT DOOR");
+      
+      - id: pageDinnerTime
+        lambda: |-
+          it.image(0, 16, id(alert_image));
+          it.image(72, 16, id(dinner_image));
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "DINNER TIME");
 
 switch:
   - platform: restart
@@ -220,8 +204,18 @@ sensor:
     entity_id: sensor.${climateTemperature}
     internal: true
 
+  - platform: homeassistant
+    id: climate_setpoint
+    entity_id: sensor.${climate}_climate_setpoint
+    internal: true
+    on_value:
+      then:
+        - sensor.rotary_encoder.set_value:
+            id: rotary_dial
+            value: !lambda 'return x;'
+
   - platform: rotary_encoder
-    id: climate_dial
+    id: rotary_dial
     pin_a:
       number: ${encoderPinA}
       inverted: true
@@ -233,8 +227,8 @@ sensor:
     filters:
       - debounce: 0.2s
     resolution: 1
-    min_value: 10
-    max_value: 30
+    min_value: ${climateLower}
+    max_value: ${climateUpper}
     on_value:
       then:
         - homeassistant.service:
@@ -243,7 +237,7 @@ sensor:
               entity_id: climate.${climate}
               temperature: "{{ climate_target | int }}"
             variables:
-              climate_target: !lambda 'return id(climate_dial).state;'
+              climate_target: !lambda 'return id(rotary_dial).state;'
               
 text_sensor:
   - platform: homeassistant
@@ -256,21 +250,18 @@ binary_sensor:
     id: api_connected
 
   - platform: homeassistant
-    id: climate_heater
-    entity_id: switch.${climateHeater}
+    id: climate_output
+    entity_id: switch.${climateSwitch}
     internal: true
 
   - platform: gpio
     pin:
-      number: ${encoderSwitch}
+      number: ${switchAction}
       inverted: true
       mode: INPUT_PULLUP
     name: Switch ${deviceUpper}
     internal: true
-    on_multi_click:
-    - timing:
-        - ON for 0.6s to 3s
-        - OFF for at least 0.3s
+    on_click:
       then:
         if:
           condition:
@@ -285,11 +276,3 @@ binary_sensor:
                 service: climate.turn_off
                 data:
                   entity_id: climate.${climate}
-                  
-    - timing:
-        - ON for at most 0.5s
-        - OFF for at least 0.4s
-      then:
-        - display.page.show: pageTime
-        - delay: 8s
-        - display.page.show: pageMain
