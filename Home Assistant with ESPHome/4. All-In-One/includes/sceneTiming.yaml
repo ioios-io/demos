@@ -7,7 +7,7 @@ on_multi_click:
     - homeassistant.service:
         service: scene.turn_on
         data:
-          entity_id: scene.${deviceParent}_bright
+          entity_id: scene.${lightGroup}_bright
 - timing:
     - ON for at most 0.6s
     - OFF for at most 0.5s
@@ -18,7 +18,7 @@ on_multi_click:
     - homeassistant.service:
         service: scene.turn_on
         data:
-          entity_id: scene.${deviceParent}_relax
+          entity_id: scene.${lightGroup}_relax
           transition: "5"
 - timing:
     - ON for at most 0.6s
@@ -32,7 +32,7 @@ on_multi_click:
     - homeassistant.service:
         service: scene.turn_on
         data:
-          entity_id: scene.${deviceParent}_cosy
+          entity_id: scene.${lightGroup}_cosy
           transition: "5"
 - timing:
     - ON for 0.8s to 5s
@@ -42,4 +42,4 @@ on_multi_click:
    - homeassistant.service:
       service: light.turn_off
       data:
-        entity_id: light.${deviceParent}_lights
+        entity_id: light.${lightGroup}_lights

@@ -1,3 +1,11 @@
+
+## ESPHome Configuration
+I am going to use the ESPHome’s native API method of connecting to Home Assistant. We will be adding tasks in this demonstration which I don’t believe are possible using MQTT alone. I’ve become fond of the native API but I have a long standing love for MQTT however in this instance, it’s just not the right tool for the job. We will be calling services in HA which are only made available via the native API.
+
+Each device will declare at least one service which we have already referenced in the automation. If we create a service called ‘Update Climate’ in ESPHome, that service will be executable using the entity esphome.plug_screen_update_climate (where plug screen is the device name). In the automation you can see that we will send the variable named climate_setpoint to the service with every call.
+
+Lastly before we begin, I will be using substitutions in ESPHome. This makes life easier when you have several devices with the same or similar setup. I define all the names at the top and they are the only values I need to change when copying and pasting into a new file. Learn more about substitutions [here](https://esphome.io/guides/configuration-types.html#substitutions), they are very simple and super useful. In brief, every time I type ${substitutionName} in ESPHome it gets replaced with whatever value I entered at the top of the file.
+
 ## What does all of that do?
 You don’t need to know any of the following for it to work but for those who are interested, this could take awhile! Firstly, you will see ‘internal: true’ a few times. This means that ESPHome doesn’t tell Home Assistant about them so they never show up as options in HA. We can still use them to control HA but they do not exist to HA. 
 
@@ -32,7 +40,7 @@ I always add a restart function to my ESPs.
 Tip: create an auto-entities card in an admin page on Lovelace with an include filter of entity_id: sensor.esp_restart\* to get a list of all your devices with a restart toggle switch.
 
 ## Sensors
-As well as a restart, I always add both a signal strength and an uptime sensor. I rarely use the former but we’ve already used the latter in our automation trigger. 
+As well as a restart, I always add both a signal strength and an uptime sensor. I rarely use the former but we’ve already used the latter in our automation trigger.
 
 *Note: Because the uptime doesn’t update until 60 seconds after boot, the automation doesn’t trigger until 60 seconds after boot. You can shorten this value if you like but this works fine for me.*
 

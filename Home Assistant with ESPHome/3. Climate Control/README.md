@@ -67,6 +67,7 @@ climate:
 * We use away_temp as a Frost setting set to 12 degrees.
 * The name Demo Climate will result in the entity demo_climate.
 
+![ioios Pithy Screen Climate Page](https://raw.githubusercontent.com/ioios-io/demos/main/Home%20Assistant%20with%20ESPHome/assets/PithyClimate.jpeg)
 ___
 
 ```

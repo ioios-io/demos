@@ -1,0 +1,607 @@
+substitutions:
+  # UNIQUE NAME FOR THE DEVICE
+  devicename: pithy_screen
+  deviceUpper: Pithy Screen
+
+  # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
+  mediaPlayer: living_room_sonos
+  lightGroup: living_room_lights
+  climate: living_room
+  climateSwitch: living_room_heater_output
+  climateTemperature: living_room_average_temperature
+
+  # CUSTOM OPTIONS
+  alertTimeout: 10s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
+  climateLower: '10' # CLIMATE LOWER LIMIT
+  climateUpper: '30' # CLIMATE UPPER LIMIT
+  defaultScreen: Climate # VALUES COULD BE Media, Brightness, Warmth or Climate
+
+  # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
+  switchMenu: ${sideSwitch}
+  switchAction: ${encoderSwitch}
+
+  # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
+  wifiPass: !secret wifiPass
+  wifiSSID: !secret wifiSSID
+  passOTA: !secret passOTA
+  passESPH: !secret passESPH
+  
+  # ESP DECLARATION
+  boardPlatform: ESP8266
+  boardName: d1_mini
+  
+  # PIN MAPPING. DEFAULTS TO ioios.io PITHY AND COUNTER DEVICES
+  encoderPinA: D5
+  encoderPinB: D6
+  encoderSwitch: D7
+  i2cData: D1
+  i2cClock: D2
+  pirSensor: D3
+  sideSwitch: TX
+  neoPixels: RX
+
+  # EXTRA SWITCHES
+  switchExtra: D4
+  
+###############################################################################
+# WHOA WHERE ARE YOU GOING? GO STEADY BEYOND HERE, THIS IS THE BREAKABLE BIT! #
+###############################################################################
+
+esphome:
+  name: ${devicename}
+  platform: ${boardPlatform}
+  board: ${boardName}
+  on_boot:
+    priority: -100
+    then:
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: OFF
+      - wait_until:
+          api.connected
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: ON
+      - display.page.show: page${defaultScreen}
+      - script.execute: pageSelect${defaultScreen}
+
+wifi:
+  ssid: ${wifiSSID}
+  password: ${wifiPass}
+
+captive_portal:
+logger:
+ota:
+  password: ${passOTA}
+  
+i2c:
+  sda: ${i2cData}
+  scl: ${i2cClock}
+  scan: True
+  frequency: 200MHz
+  id: bus_a
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    
+api:
+  password: ${passESPH} 
+  services:
+    - service: sound_doorbell
+      then:
+        - display.page.show: pageDoorbell
+        - delay: ${alertTimeout}
+        - display.page.show: page${defaultScreen}
+        - script.execute: pageSelect${defaultScreen}
+    - service: sound_dinnertime
+      then:
+        - display.page.show: pageDinnerTime
+        - delay: ${alertTimeout}
+        - display.page.show: page${defaultScreen}
+        - script.execute: pageSelect${defaultScreen}
+
+font:
+  - file: "fonts/LiberationSans-Regular.ttf"
+    id: title_font
+    size: 12
+    glyphs: ":/HTPS"
+  - file: "fonts/LiberationSans-Bold.ttf"
+    id: title_font_bold
+    size: 16
+    glyphs: "ios."
+  - file: "fonts/LiberationSans-Bold.ttf"
+    id: small_font
+    size: 16
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/LiberationSans-Regular.ttf"
+    id: standard_font
+    size: 26
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/LiberationSans-Regular.ttf"
+    id: large_font
+    size: 38
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+
+image:
+  - file: "images/heat.png"
+    id: heat_image
+    resize: 16x16
+  - file: "images/tick.png"
+    id: tick_image
+    resize: 16x16
+  - file: "images/off.png"
+    id: off_image
+    resize: 16x16
+  - file: "images/alert.png"
+    id: alert_image
+    resize: 48x48
+  - file: "images/dinner.png"
+    id: dinner_image
+    resize: 48x48
+  - file: "images/door.png"
+    id: door_image
+    resize: 34x48
+  - file: "images/warmth.png"
+    id: warmth_image
+    resize: 16x16
+  - file: "images/brightness.png"
+    id: brightness_image
+    resize: 16x16
+  - file: "images/play.png"
+    id: play_image
+    resize: 48x34
+  - file: "images/pause.png"
+    id: pause_image
+    resize: 48x34
+  - file: "images/volume.png"
+    id: volume_image
+    resize: 16x16
+  - file: "images/ioios.png"
+    id: ioios_image
+    resize: 48x48
+  - file: "images/ha.png"
+    id: ha_image
+    resize: 48x48
+
+display:
+  - platform: ssd1306_i2c
+    model: "SH1106 128x64"
+    address: 0x3C
+    update_interval: 0.2s
+    id: i2cDisplay
+    pages:
+      - id: pageMedia
+        lambda: |-
+          if(id(menu_tracker) != 0) id(menu_tracker) = 0;
+          
+          if (!id(api_connected).state) {
+            it.printf(12, 3, id(title_font), TextAlign::TOP_LEFT, "HTTPS://");
+            it.printf(124, 0, id(title_font_bold), TextAlign::TOP_RIGHT, "ioios.io");
+            
+            it.image(8, 16, id(ha_image));
+            it.image(72, 16, id(ioios_image));
+          } else {
+            if (id(media_state).state == "playing" || id(media_state).state == "paused") {
+              if (id(media_state).state == "playing") {
+                  it.image(4, 24, id(play_image));
+                  it.printf(40, 40, id(standard_font), "Playing");
+              } else {
+                  it.image(4, 24, id(pause_image));
+                  it.printf(40, 40, id(standard_font), "Paused");
+              }
+              it.image(0, 0, id(volume_image));
+              it.rectangle(20, 0, 102, 16);
+              it.filled_rectangle(21, 1, id(media_volume).state, 14);
+            }  
+          }
+
+      - id: pageBrightness
+        lambda: |-
+          if(id(menu_tracker) != 1) id(menu_tracker) = 1;
+          
+          it.image(0, 0, id(brightness_image));
+          it.rectangle(20, 0, 102, 16);
+          it.filled_rectangle(21, 1, id(percent_brightness), 14);
+          it.printf(64, 38, id(small_font), TextAlign::BOTTOM_CENTER, "Lights");
+          it.printf(64, 64, id(standard_font), TextAlign::BOTTOM_CENTER, "Brightness");
+      
+      - id: pageWarmth
+        lambda: |-
+          if(id(menu_tracker) != 2) id(menu_tracker) = 2;
+          
+          it.image(0, 0, id(warmth_image));
+          it.rectangle(20, 0, 102, 16);
+          it.filled_rectangle(21, 1, id(percent_warmth), 14);
+          it.printf(64, 38, id(small_font), TextAlign::BOTTOM_CENTER, "White");
+          it.printf(64, 64, id(standard_font), TextAlign::BOTTOM_CENTER, "Warmth");
+
+      - id: pageClimate
+        lambda: |-
+          if(id(menu_tracker) != 3) id(menu_tracker) = 3;
+          
+          if (!id(api_connected).state) {
+            it.printf(12, 2, id(title_font), TextAlign::TOP_LEFT, "HTTPS://");
+            it.printf(124, 0, id(title_font_bold), TextAlign::TOP_RIGHT, "ioios.io");
+            
+            it.image(8, 16, id(ha_image));
+            it.image(72, 16, id(ioios_image));
+          } else {
+            if (id(climate_state).state == "off") {
+              it.image(56, 0, id(off_image));
+            } else {
+              if (id(climate_output).state) {
+                  it.image(0, 0, id(heat_image));
+              } else {
+                  it.image(0, 0, id(tick_image));
+              }
+              it.printf(125, 0, id(small_font), TextAlign::TOP_RIGHT, "Set: %.0f°C", id(rotary_dial).state);
+            }
+            it.printf(64, 64, id(large_font), TextAlign::BOTTOM_CENTER, "%3.1f°C", id(climate_current).state);
+          }
+
+      - id: pageDoorbell
+        lambda: |-
+          it.image(0, 16, id(alert_image));
+          it.image(80, 16, id(door_image));
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "FRONT DOOR");
+      
+      - id: pageDinnerTime
+        lambda: |-
+          it.image(0, 16, id(alert_image));
+          it.image(72, 16, id(dinner_image));
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "DINNER TIME");
+
+globals:
+  - id: menu_tracker
+    type: int
+    initial_value: '0'
+    
+  - id: percent_brightness
+    type: int
+    initial_value: '0'
+    
+  - id: percent_warmth
+    type: int
+    initial_value: '0'    
+
+  - id: new_volume
+    type: float
+    initial_value: '0'
+
+switch:
+  - platform: restart
+    name: "ESP Restart ${deviceUpper}"
+
+text_sensor:
+  - platform: homeassistant
+    id: climate_state
+    entity_id: climate.${climate}
+    internal: true
+
+  - platform: homeassistant
+    id: media_state
+    entity_id: media_player.${mediaPlayer}
+    internal: true
+
+sensor:
+  - platform: wifi_signal
+    name: ESP Signal ${deviceUpper}
+    update_interval: 60s
+
+  - platform: uptime
+    name: ESP Uptime ${deviceUpper}
+    update_interval: 60s
+    
+  - platform: sht3xd
+    temperature:
+      name: "${deviceUpper} Temperature"
+      id: ${devicename}_temperature
+    humidity:
+      name: "${deviceUpper} Humidity"
+      id: ${devicename}_humidity
+    address: 0x44
+    update_interval: 15s
+
+  - platform: homeassistant
+    id: climate_current
+    entity_id: sensor.${climateTemperature}
+    internal: true
+
+  - platform: homeassistant
+    id: climate_setpoint
+    entity_id: sensor.${climate}_climate_setpoint
+    internal: true
+    on_value:
+      then:
+        - sensor.rotary_encoder.set_value:
+            id: rotary_dial
+            value: !lambda 'return x;'
+
+  - platform: homeassistant
+    id: media_volume
+    entity_id: sensor.${mediaPlayer}_volume
+    internal: true
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(menu_tracker) == 0;'
+            then:
+              - sensor.rotary_encoder.set_value:
+                  id: rotary_dial
+                  value: !lambda 'return x;'
+            
+  - platform: rotary_encoder
+    id: rotary_dial
+    pin_a:
+      number: ${encoderPinA}
+      inverted: true
+      mode: INPUT_PULLUP
+    pin_b:
+      number: ${encoderPinB}
+      inverted: true
+      mode: INPUT_PULLUP
+    filters:
+      - debounce: 0.1s
+      - lambda: |-
+          if(id(menu_tracker) == 1) {
+            if (x < 0.0) return 0.0;
+            if (x > 254.0) return 254.0;
+            return x;
+          } else if(id(menu_tracker) == 2) {
+            if (x < 153.0) return 153.0;
+            if (x > 465.0) return 465.0;
+            return x;
+          } else if(id(menu_tracker) == 3) {
+            if (x < ${climateLower}) return ${climateLower}.0;
+            if (x > ${climateUpper}.0) return ${climateUpper}.0;
+            return x;
+          } else {
+            return x;
+          }
+    resolution: 2
+    min_value: 0
+    max_value: 465
+    on_value: 
+      then:
+        - if:
+            condition:
+              lambda: 'return id(menu_tracker) == 1;'
+            then:
+              - homeassistant.service:
+                  service: light.turn_on
+                  data_template:
+                    entity_id: light.${lightGroup}
+                    brightness: "{{ brightness | int }}"
+                  variables:
+                    brightness: !lambda 'return id(rotary_dial).state;'
+              - globals.set:
+                  id: percent_brightness
+                  value: !lambda 'return (id(rotary_dial).state / 256) * 100;'
+            else:
+              - if:
+                  condition:
+                    lambda: 'return id(menu_tracker) == 2;'
+                  then:
+                    - homeassistant.service:
+                        service: light.turn_on
+                        data_template:
+                          entity_id: light.${lightGroup}
+                          color_temp: "{{ warmth | int }}"
+                        variables:
+                          warmth: !lambda 'return id(rotary_dial).state;'
+                    - globals.set:
+                        id: percent_warmth
+                        value: !lambda 'return ((id(rotary_dial).state - 153) / (465 - 153)) * 100;'
+                  else:
+                    - if:
+                        condition:
+                          lambda: 'return id(menu_tracker) == 3;'
+                        then:
+                          - homeassistant.service:
+                              service: climate.set_temperature
+                              data_template:
+                                entity_id: climate.${climate}
+                                temperature: "{{ climate_target | int }}"
+                              variables:
+                                climate_target: !lambda 'return id(rotary_dial).state;'
+                                
+                        else:
+                          - if:
+                              condition:
+                                lambda: 'return id(menu_tracker) == 0;'
+                              then:
+                                - globals.set:
+                                    id: new_volume
+                                    value: !lambda 'return id(rotary_dial).state / 100;'
+                                - homeassistant.service:
+                                    service: media_player.volume_set
+                                    data:
+                                      entity_id: media_player.${mediaPlayer}
+                                      volume_level: !lambda 'return id(new_volume);'
+
+  - platform: homeassistant
+    id: brightness
+    entity_id: sensor.${lightGroup}_brightness
+    on_value:
+      then:
+        - globals.set:
+            id: percent_brightness
+            value: !lambda 'return (x / 256) * 100;'
+
+  - platform: homeassistant
+    id: warmth
+    entity_id: sensor.${lightGroup}_warmth
+    on_value:
+      then:
+        - globals.set:
+            id: percent_warmth
+            value: !lambda 'return ((x - 153) / (465 - 153)) * 100;'         
+
+binary_sensor:
+  - platform: template
+    id: api_connected
+
+  - platform: homeassistant
+    id: climate_output
+    entity_id: switch.${climateSwitch}
+    internal: true
+
+  - platform: gpio
+    pin:
+      number: ${switchAction}
+      inverted: true
+      mode: INPUT_PULLUP
+    name: Action ${deviceUpper}
+    internal: true
+    on_multi_click:
+    - timing:
+      - ON for at most 1s
+      - OFF for at most 1s
+      - ON for at most 1s
+      - OFF for at least 0.2s
+      then:
+        - logger.log: "Double Click"
+        - homeassistant.service:
+            service: media_player.media_next_track
+            data_template:
+              entity_id: media_player.${mediaPlayer}
+    - timing:
+      - ON for 0.6s to 3s
+      - OFF for at least 0.1s
+      then:
+        - logger.log: "Long Click"
+        - homeassistant.service:
+            service: media_player.toggle
+            data_template:
+              entity_id: media_player.${mediaPlayer}
+    - timing:
+      - ON for at most 0.5s
+      - OFF for at least 0.4s
+      then:
+        - logger.log: "Single Click"
+        - if:
+            condition:
+              lambda: 'return id(menu_tracker) == 0;'
+            then:
+              - homeassistant.service:
+                  service: media_player.media_play_pause
+                  data_template:
+                    entity_id: media_player.${mediaPlayer}
+            else:
+              - if:
+                  condition:
+                    lambda: 'return id(menu_tracker) == 1 || id(menu_tracker) == 2;'
+                  then:
+                    - homeassistant.service:
+                        service: light.toggle
+                        data:
+                          entity_id: light.${lightGroup}
+                  else:
+                    - if:
+                        condition:
+                          lambda: 'return id(menu_tracker) == 3 && id(climate_state).state == "off";'
+                        then:
+                          - homeassistant.service:
+                              service: climate.turn_on
+                              data:
+                                entity_id: climate.${climate}
+                        else:
+                          - if:
+                              condition:
+                                lambda: 'return id(menu_tracker) == 3;'
+                              then:
+                                - homeassistant.service:
+                                    service: climate.turn_off
+                                    data:
+                                      entity_id: climate.${climate}                                            
+        
+  - platform: gpio
+    pin:
+      number: ${switchMenu}
+      inverted: true
+      mode: INPUT_PULLUP
+    name: Menu ${deviceUpper}
+    internal: true
+    on_press:
+      then:
+        - logger.log: "Next Page"
+        - if:
+            condition:
+              lambda: 'return id(menu_tracker) == 0;'
+            then:
+              - display.page.show: "pageBrightness"
+            else:
+              - if:
+                  condition:
+                    lambda: 'return id(menu_tracker) == 1;'
+                  then:
+                    - display.page.show: "pageWarmth"
+                  else:
+                    - if:
+                        condition:
+                          lambda: 'return id(menu_tracker) == 2;'
+                        then:
+                          - display.page.show: "pageClimate"
+                        else:
+                          - if:
+                              condition:
+                                lambda: 'return id(menu_tracker) == 3;'
+                              then:
+                                - display.page.show: "pageMedia"
+                              else:
+                                - display.page.show: "pageMedia"
+        - delay: 0.2s
+        - if:
+            condition:
+              lambda: 'return id(menu_tracker) == 0;'
+            then:
+              - script.execute: pageSelectMedia
+            else:
+              - if:
+                  condition:
+                    lambda: 'return id(menu_tracker) == 1;'
+                  then:
+                    - script.execute: pageSelectBrightness
+                  else:
+                    - if:
+                        condition:
+                          lambda: 'return id(menu_tracker) == 2;'
+                        then:
+                          - script.execute: pageSelectWarmth
+                        else:
+                          - if:
+                              condition:
+                                lambda: 'return id(menu_tracker) == 3;'
+                              then:
+                                - script.execute: pageSelectClimate
+
+script:
+  - id: pageSelectMedia
+    then:
+      - logger.log: "Switched to MEDIA page"
+      - sensor.rotary_encoder.set_value:
+          id: rotary_dial
+          value: !lambda 'return id(media_volume).state;'
+          
+  - id: pageSelectBrightness
+    then:
+      - logger.log: "Switched to BRIGHTNESS page"
+      - sensor.rotary_encoder.set_value:
+          id: rotary_dial
+          value: !lambda 'return id(brightness).state;'
+
+  - id: pageSelectWarmth
+    then:
+      - logger.log: "Switched to WARMTH page"
+      - sensor.rotary_encoder.set_value:
+          id: rotary_dial
+          value: !lambda 'return id(warmth).state;'
+          
+  - id: pageSelectClimate
+    then:
+      - logger.log: "Switched to CLIMATE page"
+      - sensor.rotary_encoder.set_value:
+          id: rotary_dial
+          value: !lambda 'return id(climate_setpoint).state;'
