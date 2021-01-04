@@ -1,10 +1,10 @@
 substitutions:
   # UNIQUE NAME FOR THE DEVICE
-  devicename: pithy_screen
-  deviceUpper: Pithy Screen
+  devicename: living_room_pithy_screen
+  deviceUpper: Living Room Pithy Screen
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
-  mediaPlayer: living_room_sonos
+  mediaPlayer: living_room_sonos # ID OF MEDIA PLAYER IN HA
   
   # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
   switchMenu: ${sideSwitch}

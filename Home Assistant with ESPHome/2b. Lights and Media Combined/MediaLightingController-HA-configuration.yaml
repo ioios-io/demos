@@ -1,0 +1,18 @@
+sensor:
+  - platform: template
+    sensors: 
+      living_room_sonos_volume:
+        friendly_name: 'Living Room Sonos Volume'
+        value_template: "{{ state_attr('media_player.living_room_sonos', 'volume_level') * 100 | round(0) }}"
+
+  - platform: template
+    sensors: 
+      living_room_lights_warmth:
+        friendly_name: 'Living Room Warmth'
+        value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | round(0) }}"
+        
+  - platform: template
+    sensors: 
+      living_room_lights_brightness:
+        friendly_name: 'Living Room Brightness'
+        value_template: "{{ state_attr('light.living_room_lights', 'brightness') | round(0) }}"

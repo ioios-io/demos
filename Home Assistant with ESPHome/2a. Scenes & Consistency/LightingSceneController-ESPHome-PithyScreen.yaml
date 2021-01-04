@@ -1,17 +1,17 @@
 substitutions:
   # UNIQUE NAME FOR THE DEVICE
-  devicename: pithy_screen
-  deviceUpper: Pithy Screen
+  devicename: living_room_pithy_screen
+  deviceUpper: Living Room Pithy Screen
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
-  lightGroup: living_room_lights
-  
+  lightGroup: living_room_lights # ID OF LIGHT GROUP IN HA
+
+  # CUSTOM OPTIONS
+  alertTimeout: 30s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
+
   # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
   switchMenu: ${sideSwitch}
   switchAction: ${encoderSwitch}
-    
-  # CUSTOM OPTIONS
-  alertTimeout: 30s
 
   # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
   wifiPass: !secret wifiPass

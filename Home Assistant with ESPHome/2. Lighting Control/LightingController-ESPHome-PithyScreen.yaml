@@ -1,17 +1,17 @@
 substitutions:
   # UNIQUE NAME FOR THE DEVICE
-  devicename: pithy_screen
-  deviceUpper: Pithy Screen
+  devicename: living_room_pithy_screen
+  deviceUpper: Living Room Pithy Screen
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
-  lightGroup: living_room_lights
+  lightGroup: living_room_lights # ID OF LIGHT GROUP IN HA
+
+  # CUSTOM OPTIONS
+  alertTimeout: 30s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
   
   # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
   switchMenu: ${sideSwitch}
   switchAction: ${encoderSwitch}
-    
-  # CUSTOM OPTIONS
-  alertTimeout: 30s
 
   # WIFI AND OTHER CREDENTIALS. USE SECRETS WHERE POSSIBLE
   wifiPass: !secret wifiPass
@@ -154,7 +154,8 @@ display:
           it.image(0, 0, id(brightness_image));
           it.rectangle(20, 0, 102, 16);
           it.filled_rectangle(21, 1, id(percent_brightness), 14);
-          it.printf(10, 39, id(standard_font), "Brightness");
+          it.printf(64, 38, id(small_font), TextAlign::BOTTOM_CENTER, "Lights");
+          it.printf(64, 64, id(standard_font), TextAlign::BOTTOM_CENTER, "Brightness");
       
       - id: pageWarmth
         lambda: |-
@@ -163,7 +164,8 @@ display:
           it.image(0, 0, id(warmth_image));
           it.rectangle(20, 0, 102, 16);
           it.filled_rectangle(21, 1, id(percent_warmth), 14);
-          it.printf(20, 39, id(standard_font), "Warmth");
+          it.printf(64, 38, id(small_font), TextAlign::BOTTOM_CENTER, "White");
+          it.printf(64, 64, id(standard_font), TextAlign::BOTTOM_CENTER, "Warmth");
       
       - id: pageDoorbell
         lambda: |-

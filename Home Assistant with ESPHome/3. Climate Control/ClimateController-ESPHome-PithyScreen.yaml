@@ -1,17 +1,17 @@
 substitutions:
   # UNIQUE NAME FOR THE DEVICE
-  devicename: plug_screen
-  deviceUpper: Plug Screen
-  
+  devicename: living_room_pithy_screen
+  deviceUpper: Living Room Pithy Screen
+
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
-  climate: living_room
-  climateHeater: living_room_heater_output
-  climateTemperature: living_room_average_temperature
+  climate: living_room # ID OF THERMOSTAT IN HA
+  climateSwitch: living_room_heater_output # THE OUTPUT THE ABOVE THERMOSTAT SWITCHES
+  climateTemperature: living_room_average_temperature # THE TEMPERATURE FED INTO IN THE THERMOSTAT
 
   # CUSTOM OPTIONS
-  alertTimeout: 30s
-  climateLower: '10'
-  climateUpper: '30'
+  alertTimeout: 30s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
+  climateLower: '10' # CLIMATE LOWER LIMIT
+  climateUpper: '30' # CLIMATE UPPER LIMIT
 
   # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
   switchMenu: ${sideSwitch}

@@ -2,8 +2,8 @@ substitutions:
   boardPlatform: ESP8266
   boardName: d1_mini
   
-  devicename: plug_neopixel
-  deviceUpper: Plug Neopixel
+  devicename: living_room_plug_neopixel
+  deviceUpper: Living Room Plug Neopixel
   
   climate: demo_climate
   climateHeater: demo_heater_output
