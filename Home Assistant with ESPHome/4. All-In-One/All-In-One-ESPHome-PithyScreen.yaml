@@ -1,14 +1,14 @@
 substitutions:
   # UNIQUE NAME FOR THE DEVICE
-  devicename: pithy_screen
-  deviceUpper: Pithy Screen
+  devicename: living_room_pithy_screen
+  deviceUpper: Living Room Pithy Screen
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
-  mediaPlayer: living_room_sonos
-  lightGroup: living_room_lights
-  climate: living_room
-  climateSwitch: living_room_heater_output
-  climateTemperature: living_room_average_temperature
+  mediaPlayer: living_room_sonos # ID OF MEDIA PLAYER IN HA
+  lightGroup: living_room_lights # ID OF LIGHT GROUP IN HA
+  climate: living_room # ID OF THERMOSTAT IN HA
+  climateSwitch: living_room_heater_output # THE OUTPUT THE ABOVE THERMOSTAT SWITCHES
+  climateTemperature: living_room_average_temperature # THE TEMPERATURE FED INTO IN THE THERMOSTAT
 
   # CUSTOM OPTIONS
   alertTimeout: 10s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
@@ -219,26 +219,18 @@ display:
       - id: pageClimate
         lambda: |-
           if(id(menu_tracker) != 3) id(menu_tracker) = 3;
-          
-          if (!id(api_connected).state) {
-            it.printf(12, 2, id(title_font), TextAlign::TOP_LEFT, "HTTPS://");
-            it.printf(124, 0, id(title_font_bold), TextAlign::TOP_RIGHT, "ioios.io");
-            
-            it.image(8, 16, id(ha_image));
-            it.image(72, 16, id(ioios_image));
+
+          if (id(climate_state).state == "off") {
+            it.image(56, 0, id(off_image));
           } else {
-            if (id(climate_state).state == "off") {
-              it.image(56, 0, id(off_image));
+            if (id(climate_output).state) {
+                it.image(0, 0, id(heat_image));
             } else {
-              if (id(climate_output).state) {
-                  it.image(0, 0, id(heat_image));
-              } else {
-                  it.image(0, 0, id(tick_image));
-              }
-              it.printf(125, 0, id(small_font), TextAlign::TOP_RIGHT, "Set: %.0f°C", id(rotary_dial).state);
+                it.image(0, 0, id(tick_image));
             }
-            it.printf(64, 64, id(large_font), TextAlign::BOTTOM_CENTER, "%3.1f°C", id(climate_current).state);
+            it.printf(125, 0, id(small_font), TextAlign::TOP_RIGHT, "Set: %.0f°C", id(rotary_dial).state);
           }
+          it.printf(64, 64, id(large_font), TextAlign::BOTTOM_CENTER, "%3.1f°C", id(climate_current).state);
 
       - id: pageDoorbell
         lambda: |-
