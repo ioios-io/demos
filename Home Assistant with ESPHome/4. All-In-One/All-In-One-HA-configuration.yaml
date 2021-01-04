@@ -1,0 +1,50 @@
+climate:
+  - platform: generic_thermostat
+    name: Living Room
+    heater: switch.living_room_heater_output
+    target_sensor: sensor.living_room_average_temperature
+    min_temp: 10
+    max_temp: 30
+    target_temp: 16
+    cold_tolerance: 0
+    hot_tolerance: 0
+    min_cycle_duration:
+      seconds: 30
+    keep_alive:
+      minutes: 3
+    away_temp: 10
+    precision: 0.1
+
+sensor:
+  - platform: min_max
+    name: “Living Room Average Temperature"
+    type: mean
+    round_digits: 1
+    entity_ids:
+      - sensor.living_room_pithy_pixel_temperature
+      - sensor.living_room_pithy_screen_temperature
+
+  - platform: template
+    sensors: 
+      living_room_climate_setpoint:
+        friendly_name: 'Living Room Climate Setpoint'
+        unit_of_measurement: '°C'
+        value_template: "{{ state_attr('climate.living_room', 'temperature') | round(0) }}"
+        
+  - platform: template
+    sensors: 
+      living_room_sonos_volume:
+        friendly_name: 'Living Room Sonos Volume'
+        value_template: "{{ state_attr('media_player.living_room_sonos', 'volume_level') * 100 | round(0) }}"
+
+  - platform: template
+    sensors: 
+      living_room_lights_warmth:
+        friendly_name: 'Living Room Warmth'
+        value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | round(0) }}"
+        
+  - platform: template
+    sensors: 
+      living_room_lights_brightness:
+        friendly_name: 'Living Room Brightness'
+        value_template: "{{ state_attr('light.living_room_lights', 'brightness') | round(0) }}"

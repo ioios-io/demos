@@ -11,7 +11,7 @@ substitutions:
   climateTemperature: living_room_average_temperature # THE TEMPERATURE FED INTO IN THE THERMOSTAT
 
   # CUSTOM OPTIONS
-  alertTimeout: 10s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
+  alertTimeout: 20s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
   climateLower: '10' # CLIMATE LOWER LIMIT
   climateUpper: '30' # CLIMATE UPPER LIMIT
   defaultScreen: Climate # VALUES COULD BE Media, Brightness, Warmth or Climate
