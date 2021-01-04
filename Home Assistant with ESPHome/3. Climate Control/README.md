@@ -24,8 +24,8 @@ sensor:
     type: mean
     round_digits: 1
     entity_ids:
-      - sensor.pithy_pixel_temperature
-      - sensor.pithy_screen_temperature
+      - sensor.living_room_pithy_pixel_temperature
+      - sensor.living_room_pithy_screen_temperature
 
   - platform: template
     sensors: 
