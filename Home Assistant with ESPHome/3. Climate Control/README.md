@@ -9,10 +9,8 @@ Using the `generic_thermostat` component in HA we will configure two Pithy devic
 This example uses an electric heater for its heat source. This can be adapted to suit your heating system or you could use this as I do and control your workshop’s climate with a cheap (to buy) electric wall heater. You could also control a radiator or underfloor-heating zone if they can be integrated into HA.
 
 ## ESPHome Substitutions
-We just need to provide 3 entities:
+We just need to provide 1 entity:
 1. `climate` - In our example, `living_room`
-2. `climateSwitch` - In our example, `living_room_heater`
-3. `climateTemperature` - In our example, `living_room_average_temperature`
 
 ## Home Assistant Configuration
 
@@ -29,19 +27,32 @@ sensor:
 
   - platform: template
     sensors: 
+      living_room_climate_temperature:
+        friendly_name: Living Room Climate Temperature
+        value_template: "{{ state_attr('climate.living_room', 'current_temperature') | round(1) }}"
       living_room_climate_setpoint:
         friendly_name: 'Living Room Climate Setpoint'
         unit_of_measurement: '°C'
         value_template: "{{ state_attr('climate.living_room', 'temperature') | round(0) }}"
+
+binary_sensor:
+  - platform: template
+    sensors:
+      living_room_climate_heating:
+        friendly_name: Living Room Climate Heating
+        device_class: heat
+        value_template: >-
+          {{ state_attr('climate.living_room', 'hvac_action') | string == "heating" }}
 ```
-* Use the min/max sensor with the type 'mean'
+Use the min/max sensor with the type `mean`.
 * Add as many sensors as you have in the room.
 * Off-line entities do not drag down the average.
-
-Use template sensor to grab the climate’s setpoint.
-* We want the value ‘temperature’ from the climate object.
-* Using a template we store it with no decimal places.
-* This value will be sent to each ESP on every change to keep each device up to date.
+___
+Use template sensor to grab the climate’s target & current temperature.
+* Using a template we store it with 0 and 1 decimal places respectively.
+* These values will be sent to each ESP on every change to keep each device up to date.
+___
+Use a binary sensor template to determine the current heating status of the system.
 
 #### Setup Generic Thermostat
 ```

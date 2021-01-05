@@ -5,8 +5,6 @@ substitutions:
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
   climate: living_room # ID OF THERMOSTAT IN HA
-  climateSwitch: living_room_heater_output # THE OUTPUT THE ABOVE THERMOSTAT SWITCHES
-  climateTemperature: living_room_average_temperature # THE TEMPERATURE FED INTO IN THE THERMOSTAT
 
   # CUSTOM OPTIONS
   alertTimeout: 30s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
@@ -201,7 +199,7 @@ sensor:
 
   - platform: homeassistant
     id: climate_current
-    entity_id: sensor.${climateTemperature}
+    entity_id: sensor.${climate}_climate_temperature
     internal: true
 
   - platform: homeassistant
@@ -251,7 +249,7 @@ binary_sensor:
 
   - platform: homeassistant
     id: climate_output
-    entity_id: switch.${climateSwitch}
+    entity_id: binary_sensor.${climate}_climate_heating
     internal: true
 
   - platform: gpio

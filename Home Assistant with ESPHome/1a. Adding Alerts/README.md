@@ -10,7 +10,7 @@ There are no additional values to change in the ESP files. We have added two ser
 
 
 ## Home Assistant
-We have supplied two automations which activate the two services and also show how to make a voice annoucnement via our Sonos at the same time.
+We have supplied two automations which activate the two services and also show how to make a voice announcement via our Sonos at the same time.
 
 An example action (as found in the automations) would look like this:
 ```
