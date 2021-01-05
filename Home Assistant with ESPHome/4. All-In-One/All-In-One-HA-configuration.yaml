@@ -15,7 +15,34 @@ climate:
     away_temp: 10
     precision: 0.1
 
+light:
+  - platform: group
+    name: Living Room Lights
+    entities:
+      - light.hue_ambiance_spot_1
+      - light.hue_ambiance_spot_2
+      - light.hue_ambiance_candle_1
+
+binary_sensor:
+  - platform: template
+    sensors:
+      living_room_climate_heating:
+        friendly_name: Living Room Climate Heating
+        device_class: heat
+        value_template: >-
+          {{ state_attr('climate.living_room', 'hvac_action') | string == "heating" }}
+
 sensor:
+  - platform: template
+    sensors:
+      living_room_climate_temperature:
+        friendly_name: Living Room Climate Temperature
+        value_template: "{{ state_attr('climate.living_room', 'current_temperature') | round(1) }}"
+      living_room_climate_setpoint:
+        friendly_name: 'Living Room Climate Setpoint'
+        unit_of_measurement: '°C'
+        value_template: "{{ state_attr('climate.living_room', 'temperature') | round(0) }}"
+
   - platform: min_max
     name: “Living Room Average Temperature"
     type: mean
@@ -23,14 +50,7 @@ sensor:
     entity_ids:
       - sensor.living_room_pithy_pixel_temperature
       - sensor.living_room_pithy_screen_temperature
-
-  - platform: template
-    sensors: 
-      living_room_climate_setpoint:
-        friendly_name: 'Living Room Climate Setpoint'
-        unit_of_measurement: '°C'
-        value_template: "{{ state_attr('climate.living_room', 'temperature') | round(0) }}"
-        
+ 
   - platform: template
     sensors: 
       living_room_sonos_volume:
@@ -42,9 +62,6 @@ sensor:
       living_room_lights_warmth:
         friendly_name: 'Living Room Warmth'
         value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | round(0) }}"
-        
-  - platform: template
-    sensors: 
       living_room_lights_brightness:
         friendly_name: 'Living Room Brightness'
         value_template: "{{ state_attr('light.living_room_lights', 'brightness') | round(0) }}"
