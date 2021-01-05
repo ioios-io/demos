@@ -5,7 +5,6 @@ substitutions:
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
   mediaPlayer: living_room_sonos # ID OF MEDIA PLAYER IN HA
-  lightGroup: living_room_lights # ID OF LIGHT GROUP IN HA
   climate: living_room # ID OF THERMOSTAT IN HA
   
   # CUSTOM OPTIONS
@@ -196,38 +195,34 @@ display:
       - id: pageBrightness
         lambda: |-
           if(id(menu_tracker) != 1) id(menu_tracker) = 1;
-          
-          it.image(0, 0, id(brightness_image));
-          it.rectangle(20, 0, 102, 16);
-          it.filled_rectangle(21, 1, id(percent_brightness), 14);
-          it.printf(64, 38, id(small_font), TextAlign::BOTTOM_CENTER, "Lights");
-          it.printf(64, 64, id(standard_font), TextAlign::BOTTOM_CENTER, "Brightness");
       
       - id: pageWarmth
         lambda: |-
           if(id(menu_tracker) != 2) id(menu_tracker) = 2;
-          
-          it.image(0, 0, id(warmth_image));
-          it.rectangle(20, 0, 102, 16);
-          it.filled_rectangle(21, 1, id(percent_warmth), 14);
-          it.printf(64, 38, id(small_font), TextAlign::BOTTOM_CENTER, "White");
-          it.printf(64, 64, id(standard_font), TextAlign::BOTTOM_CENTER, "Warmth");
 
       - id: pageClimate
         lambda: |-
           if(id(menu_tracker) != 3) id(menu_tracker) = 3;
-
-          if (id(climate_state).state == "off") {
-            it.image(56, 0, id(off_image));
+          
+          if (!id(api_connected).state) {
+            it.printf(12, 2, id(title_font), TextAlign::TOP_LEFT, "HTTPS://");
+            it.printf(124, 0, id(title_font_bold), TextAlign::TOP_RIGHT, "ioios.io");
+            
+            it.image(8, 16, id(ha_image));
+            it.image(72, 16, id(ioios_image));
           } else {
-            if (id(climate_output).state) {
-                it.image(0, 0, id(heat_image));
+            if (id(climate_state).state == "off") {
+              it.image(56, 0, id(off_image));
             } else {
-                it.image(0, 0, id(tick_image));
+              if (id(climate_output).state) {
+                  it.image(0, 0, id(heat_image));
+              } else {
+                  it.image(0, 0, id(tick_image));
+              }
+              it.printf(125, 0, id(small_font), TextAlign::TOP_RIGHT, "Set: %.0f°C", id(rotary_dial).state);
             }
-            it.printf(125, 0, id(small_font), TextAlign::TOP_RIGHT, "Set: %.0f°C", id(rotary_dial).state);
+            it.printf(64, 64, id(large_font), TextAlign::BOTTOM_CENTER, "%3.1f°C", id(climate_current).state);
           }
-          it.printf(64, 64, id(large_font), TextAlign::BOTTOM_CENTER, "%3.1f°C", id(climate_current).state);
 
       - id: pageDoorbell
         lambda: |-
@@ -244,15 +239,7 @@ display:
 globals:
   - id: menu_tracker
     type: int
-    initial_value: '0'
-    
-  - id: percent_brightness
-    type: int
-    initial_value: '0'
-    
-  - id: percent_warmth
-    type: int
-    initial_value: '0'    
+    initial_value: '0'  
 
   - id: new_volume
     type: float
@@ -302,6 +289,7 @@ sensor:
     entity_id: sensor.${climate}_climate_setpoint
     internal: true
     on_value:
+      then:
         - if:
             condition:
               lambda: 'return id(menu_tracker) == 3;'
@@ -341,14 +329,6 @@ sensor:
             if (x < 0.0) return 0.0;
             if (x > 100.0) return 100.0;
             return x;
-          } else if(id(menu_tracker) == 1) {
-            if (x < 0.0) return 0.0;
-            if (x > 254.0) return 254.0;
-            return x;
-          } else if(id(menu_tracker) == 2) {
-            if (x < 153.0) return 153.0;
-            if (x > 465.0) return 465.0;
-            return x;
           } else if(id(menu_tracker) == 3) {
             if (x < ${climateLower}) return ${climateLower}.0;
             if (x > ${climateUpper}.0) return ${climateUpper}.0;
@@ -363,77 +343,29 @@ sensor:
       then:
         - if:
             condition:
-              lambda: 'return id(menu_tracker) == 1;'
+              lambda: 'return id(menu_tracker) == 3;'
             then:
               - homeassistant.service:
-                  service: light.turn_on
+                  service: climate.set_temperature
                   data_template:
-                    entity_id: light.${lightGroup}
-                    brightness: "{{ brightness | int }}"
+                    entity_id: climate.${climate}
+                    temperature: "{{ climate_target | int }}"
                   variables:
-                    brightness: !lambda 'return id(rotary_dial).state;'
-              - globals.set:
-                  id: percent_brightness
-                  value: !lambda 'return (id(rotary_dial).state / 256) * 100;'
+                    climate_target: !lambda 'return id(rotary_dial).state;'
+                    
             else:
               - if:
                   condition:
-                    lambda: 'return id(menu_tracker) == 2;'
+                    lambda: 'return id(menu_tracker) == 0;'
                   then:
-                    - homeassistant.service:
-                        service: light.turn_on
-                        data_template:
-                          entity_id: light.${lightGroup}
-                          color_temp: "{{ warmth | int }}"
-                        variables:
-                          warmth: !lambda 'return id(rotary_dial).state;'
                     - globals.set:
-                        id: percent_warmth
-                        value: !lambda 'return ((id(rotary_dial).state - 153) / (465 - 153)) * 100;'
-                  else:
-                    - if:
-                        condition:
-                          lambda: 'return id(menu_tracker) == 3;'
-                        then:
-                          - homeassistant.service:
-                              service: climate.set_temperature
-                              data_template:
-                                entity_id: climate.${climate}
-                                temperature: "{{ climate_target | int }}"
-                              variables:
-                                climate_target: !lambda 'return id(rotary_dial).state;'
-                                
-                        else:
-                          - if:
-                              condition:
-                                lambda: 'return id(menu_tracker) == 0;'
-                              then:
-                                - globals.set:
-                                    id: new_volume
-                                    value: !lambda 'return id(rotary_dial).state / 100;'
-                                - homeassistant.service:
-                                    service: media_player.volume_set
-                                    data:
-                                      entity_id: media_player.${mediaPlayer}
-                                      volume_level: !lambda 'return id(new_volume);'
-
-  - platform: homeassistant
-    id: brightness
-    entity_id: sensor.${lightGroup}_brightness
-    on_value:
-      then:
-        - globals.set:
-            id: percent_brightness
-            value: !lambda 'return (x / 256) * 100;'
-
-  - platform: homeassistant
-    id: warmth
-    entity_id: sensor.${lightGroup}_warmth
-    on_value:
-      then:
-        - globals.set:
-            id: percent_warmth
-            value: !lambda 'return ((x - 153) / (465 - 153)) * 100;'         
+                        id: new_volume
+                        value: !lambda 'return id(rotary_dial).state / 100;'
+                    - homeassistant.service:
+                        service: media_player.volume_set
+                        data:
+                          entity_id: media_player.${mediaPlayer}
+                          volume_level: !lambda 'return id(new_volume);'       
 
 binary_sensor:
   - platform: template
@@ -488,30 +420,21 @@ binary_sensor:
             else:
               - if:
                   condition:
-                    lambda: 'return id(menu_tracker) == 1 || id(menu_tracker) == 2;'
+                    lambda: 'return id(menu_tracker) == 3 && id(climate_state).state == "off";'
                   then:
                     - homeassistant.service:
-                        service: light.toggle
+                        service: climate.turn_on
                         data:
-                          entity_id: light.${lightGroup}
+                          entity_id: climate.${climate}
                   else:
                     - if:
                         condition:
-                          lambda: 'return id(menu_tracker) == 3 && id(climate_state).state == "off";'
+                          lambda: 'return id(menu_tracker) == 3;'
                         then:
                           - homeassistant.service:
-                              service: climate.turn_on
+                              service: climate.turn_off
                               data:
-                                entity_id: climate.${climate}
-                        else:
-                          - if:
-                              condition:
-                                lambda: 'return id(menu_tracker) == 3;'
-                              then:
-                                - homeassistant.service:
-                                    service: climate.turn_off
-                                    data:
-                                      entity_id: climate.${climate}                                            
+                                entity_id: climate.${climate}                                            
         
   - platform: gpio
     pin:
@@ -527,7 +450,7 @@ binary_sensor:
             condition:
               lambda: 'return id(menu_tracker) == 0;'
             then:
-              - display.page.show: "pageBrightness"
+              - display.page.show: "pageClimate"
             else:
               - if:
                   condition:
@@ -584,16 +507,10 @@ script:
   - id: pageSelectBrightness
     then:
       - logger.log: "Switched to BRIGHTNESS page"
-      - sensor.rotary_encoder.set_value:
-          id: rotary_dial
-          value: !lambda 'return id(brightness).state;'
 
   - id: pageSelectWarmth
     then:
       - logger.log: "Switched to WARMTH page"
-      - sensor.rotary_encoder.set_value:
-          id: rotary_dial
-          value: !lambda 'return id(warmth).state;'
           
   - id: pageSelectClimate
     then:
