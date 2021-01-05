@@ -18,13 +18,13 @@ substitutions:
   boardPlatform: ESP8266
   boardName: d1_mini
 
-  devicename: pithy_screen
+  deviceName: pithy_screen
   deviceUpper: Pithy Screen
 ```
 Once we defined our values, we can call each substitution in the code by using a dollar sign and curly brackets. So, the first section of our code would look like:
 ```
 esphome:
-  name: ${devicename}
+  name: ${deviceName}
   platform: ${boardPlatform}
   board: ${boardName}
 ```
@@ -36,7 +36,7 @@ substitutions:
   boardPlatform: ESP8266
   boardName: d1_mini
 
-  devicename: pithy_screen
+  deviceName: pithy_screen
   deviceUpper: Pithy Screen
 
   wifiSSID: !secret wifiSSID
@@ -58,7 +58,7 @@ substitutions:
   boardPlatform: ESP8266
   boardName: d1_mini
 
-  devicename: pithy_screen
+  deviceName: pithy_screen
   deviceUpper: Pithy Screen
 
   wifiSSID: !secret wifiSSID

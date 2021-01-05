@@ -57,7 +57,7 @@ substitutions:
   boardPlatform: ESP8266
   boardName: d1_mini
   
-  devicename: living_room_pithy_screen
+  deviceName: living_room_pithy_screen
   deviceUpper: Living Room Screen
   deviceParent: living_room
 
@@ -74,7 +74,7 @@ substitutions:
 
 ###############################################
 esphome:
-  name: $devicename
+  name: $deviceName
   platform: $boardPlatform
   board: $boardName
 
@@ -144,10 +144,10 @@ sensor:
   - platform: sht3xd
     temperature:
       name: "${deviceUpper} Temperature"
-      id: ${devicename}_temperature
+      id: ${deviceName}_temperature
     humidity:
       name: "${deviceUpper} Humidity"
-      id: ${devicename}_humidity
+      id: ${deviceName}_humidity
     address: 0x44
     update_interval: 15s
     

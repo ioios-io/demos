@@ -80,7 +80,7 @@ substitutions:
   boardPlatform: ESP8266
   boardName: d1_mini
   
-  devicename: plug_neopixel
+  deviceName: plug_neopixel
   deviceUpper: Plug Neopixel
   
   climate: demo_climate
@@ -94,7 +94,7 @@ substitutions:
   i2cClock: D2
 
 esphome:
-  name: $devicename
+  name: $deviceName
   platform: $boardPlatform
   board: $boardName
 
@@ -123,7 +123,7 @@ api:
     - service: doorbell
       then:
       - light.turn_on:
-          id: ${devicename}_neopixel
+          id: ${deviceName}_neopixel
           brightness: 100%
           red: 100%
           blue: 0%
@@ -131,7 +131,7 @@ api:
           effect: "Knight Rider"
       - delay: 10s
       - light.turn_off:
-          id: ${devicename}_neopixel
+          id: ${deviceName}_neopixel
     - service: update_climate
       variables:
         climate_setpoint: int
@@ -141,12 +141,12 @@ api:
           value: !lambda 'return climate_setpoint;'
           
       - light.turn_on:
-          id: ${devicename}_neopixel
+          id: ${deviceName}_neopixel
           brightness: 90%
           effect: "Climate Display"
       - delay: 10s
       - light.turn_off:
-          id: ${devicename}_neopixel
+          id: ${deviceName}_neopixel
           
 switch:
   - platform: restart
@@ -164,10 +164,10 @@ sensor:
   - platform: sht3xd
     temperature:
       name: "${deviceUpper} Temperature"
-      id: ${devicename}_temperature
+      id: ${deviceName}_temperature
     humidity:
       name: "${deviceUpper} Humidity"
-      id: ${devicename}_humidity
+      id: ${deviceName}_humidity
     address: 0x44
     update_interval: 15s
 
@@ -243,19 +243,19 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - light.turn_on:
-            id: ${devicename}_neopixel
+            id: ${deviceName}_neopixel
             brightness: 90%
             effect: "Climate Display"
         - delay: 10s
         - light.turn_off:
-            id: ${devicename}_neopixel
+            id: ${deviceName}_neopixel
         
 light:
   - platform: neopixelbus
     type: GRB
     pin: RX
     num_leds: 16
-    id: ${devicename}_neopixel
+    id: ${deviceName}_neopixel
     name: "${deviceUpper} Ring"
     effects:
       - addressable_rainbow:

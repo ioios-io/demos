@@ -1,6 +1,6 @@
 substitutions:
   # UNIQUE NAME FOR THE DEVICE
-  devicename: living_room_pithy_screen
+  deviceName: living_room_pithy_screen
   deviceUpper: Living Room Pithy Screen
 
   # ENTITY MAPPING FOR THE DIFFERENT FUNCTIONS
@@ -45,7 +45,7 @@ substitutions:
 ###############################################################################
 
 esphome:
-  name: ${devicename}
+  name: ${deviceName}
   platform: ${boardPlatform}
   board: ${boardName}
   on_boot:
@@ -182,10 +182,10 @@ display:
             if (id(media_state).state == "playing" || id(media_state).state == "paused") {
               if (id(media_state).state == "playing") {
                   it.image(4, 24, id(play_image));
-                  it.printf(40, 40, id(standard_font), "Playing");
+                  it.printf(34, 41, id(standard_font), "Playing");
               } else {
                   it.image(4, 24, id(pause_image));
-                  it.printf(40, 40, id(standard_font), "Paused");
+                  it.printf(34, 41, id(standard_font), "Paused");
               }
               it.image(0, 0, id(volume_image));
               it.rectangle(20, 0, 102, 16);
@@ -272,10 +272,10 @@ sensor:
   - platform: sht3xd
     temperature:
       name: "${deviceUpper} Temperature"
-      id: ${devicename}_temperature
+      id: ${deviceName}_temperature
     humidity:
       name: "${deviceUpper} Humidity"
-      id: ${devicename}_humidity
+      id: ${deviceName}_humidity
     address: 0x44
     update_interval: 15s
 
