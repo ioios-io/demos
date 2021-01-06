@@ -51,6 +51,7 @@ esphome:
           state: OFF
       - wait_until:
           api.connected
+      - delay: 15s
       - binary_sensor.template.publish:
           id: api_connected
           state: ON

@@ -50,13 +50,14 @@ esphome:
   platform: ${boardPlatform}
   board: ${boardName}
   on_boot:
-    priority: -100
+    priority: 200
     then:
       - binary_sensor.template.publish:
           id: api_connected
           state: OFF
       - wait_until:
           api.connected
+      - delay: 15s
       - binary_sensor.template.publish:
           id: api_connected
           state: ON
