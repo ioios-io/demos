@@ -15,7 +15,7 @@ We have supplied two automations which activate the two services and also show h
 An example action (as found in the automations) would look like this:
 ```
   action:
-  - service: esphome.bedroom_screen_sound_dinnertime
+  - service: esphome.bedroom_screen_alert_dinnertime
     data: {}
   - service: tts.google_translate_say
     data:

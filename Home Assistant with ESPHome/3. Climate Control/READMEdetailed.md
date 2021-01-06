@@ -18,7 +18,7 @@ We need a define a password for the API which in this case is stored in our secr
 
 We then proceed to create our main service, to update the climate in the ESP when it changes in HA. This is not to change the value in HA, that is done later, this just keeps the values the same on all devices. We grab the value which we sent from HA in the automation called ‘climate_setpoint’ and we update our rotary encoder value. Therefore when we turn this dial up 1, it adds 1 to the last value in HA, not just this dial’s last value.
 
-We declare a second service called sound_doorbell which displays a page called pageDoorbell on the display for 60 seconds and then resets the screen to the main page.
+We declare a second service called alert_doorbell which displays a page called pageDoorbell on the display for 60 seconds and then resets the screen to the main page.
 
 ## Fonts
 Define 5 font types for use on the display. Each one requires an ID to be used when writing pages, a size, the actual font file and the gyphs; which are the characters you intend to use with that font. For conserving memory, it’s good practice to confine them to the bare minimum required.

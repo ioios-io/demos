@@ -80,12 +80,12 @@ time:
 api:
   password: ${passESPH} 
   services:
-    - service: sound_doorbell
+    - service: alert_doorbell
       then:
         - display.page.show: pageDoorbell
         - delay: ${alertTimeout}
         - display.page.show: pageMedia
-    - service: sound_dinnertime
+    - service: alert_dinnertime
       then:
         - display.page.show: pageDinnerTime
         - delay: ${alertTimeout}
