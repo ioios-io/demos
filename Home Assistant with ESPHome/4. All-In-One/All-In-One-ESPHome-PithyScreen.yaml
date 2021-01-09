@@ -8,12 +8,13 @@ substitutions:
   lightGroup: living_room_lights # ID OF LIGHT GROUP IN HA
   climate: living_room # ID OF THERMOSTAT IN HA
   
-  # CUSTOM OPTIONS
+   # CUSTOM OPTIONS
   alertTimeout: 10s # NUMBER OF SECONDS THE ALRTS WILL BE SHOWN
   climateLower: '10' # CLIMATE LOWER LIMIT
   climateUpper: '30' # CLIMATE UPPER LIMIT
-  defaultScreen: Climate # VALUES COULD BE Media, Brightness, Warmth or Climate
-
+  defaultScreen: Media # VALUES COULD BE Media, Brightness, Warmth or Climate
+  defaultReturn: '6' # NUMBER OF SECONDS BEFORE SCREEN RETURNS TO DEFAULT
+  
   # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
   switchMenu: ${sideSwitch}
   switchAction: ${encoderSwitch}
@@ -123,6 +124,9 @@ font:
     glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
 
 image:
+  - file: "images/return.png"
+    id: return_image
+    resize: 48x48
   - file: "images/heat.png"
     id: heat_image
     resize: 16x16
@@ -242,6 +246,11 @@ display:
           it.image(72, 16, id(dinner_image));
           it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "DINNER TIME");
 
+      - id: pageReturning
+        lambda: |-
+          it.image(48, 16, id(return_image));
+          it.printf(64, 0, id(small_font), TextAlign::TOP_CENTER, "RETURNING");
+          
 globals:
   - id: menu_tracker
     type: int
@@ -259,6 +268,34 @@ globals:
     type: float
     initial_value: '0'
 
+  - id: lastAct
+    type: int
+    initial_value: '0'
+    
+  - id: uptimeSecs
+    type: int
+    initial_value: '0'
+    
+  - id: oneShot
+    type: int
+    initial_value: '0'
+    
+  - id: ignoreAction
+    type: int
+    initial_value: '0'
+    
+interval:
+  - interval: 1sec
+    then:
+      - lambda: 'id(uptimeSecs) += 1;'
+      - if:
+          condition: 
+              lambda: 'return (id(uptimeSecs) > (id(lastAct) + ${defaultReturn})) && id(oneShot) == 1;'
+          then:
+            - logger.log: "Returning To Default Page"
+            - lambda: 'id(oneShot) = 0;'
+            - script.execute: pageSelect
+                
 switch:
   - platform: restart
     name: "ESP Restart ${deviceUpper}"
@@ -282,7 +319,13 @@ sensor:
   - platform: uptime
     name: ESP Uptime ${deviceUpper}
     update_interval: 60s
-    
+    on_value:
+      then:
+        - globals.set:
+            id: uptimeSecs
+            value: !lambda |- 
+              return x;
+              
   - platform: sht3xd
     temperature:
       name: "${deviceUpper} Temperature"
@@ -376,6 +419,7 @@ sensor:
               - globals.set:
                   id: percent_brightness
                   value: !lambda 'return (id(rotary_dial).state / 256) * 100;'
+              - script.execute: lastAction
             else:
               - if:
                   condition:
@@ -391,6 +435,7 @@ sensor:
                     - globals.set:
                         id: percent_warmth
                         value: !lambda 'return ((id(rotary_dial).state - 153) / (465 - 153)) * 100;'
+                    - script.execute: lastAction
                   else:
                     - if:
                         condition:
@@ -403,6 +448,7 @@ sensor:
                                 temperature: "{{ climate_target | int }}"
                               variables:
                                 climate_target: !lambda 'return id(rotary_dial).state;'
+                          - script.execute: lastAction
                                 
                         else:
                           - if:
@@ -417,6 +463,7 @@ sensor:
                                     data:
                                       entity_id: media_player.${mediaPlayer}
                                       volume_level: !lambda 'return id(new_volume);'
+                                - script.execute: lastAction
 
   - platform: homeassistant
     id: brightness
@@ -459,6 +506,7 @@ binary_sensor:
       - ON for at most 1s
       - OFF for at least 0.2s
       then:
+        - script.execute: lastAction
         - logger.log: "Double Click"
         - homeassistant.service:
             service: media_player.media_next_track
@@ -468,6 +516,7 @@ binary_sensor:
       - ON for 0.6s to 3s
       - OFF for at least 0.1s
       then:
+        - script.execute: lastAction
         - logger.log: "Long Click"
         - homeassistant.service:
             service: media_player.toggle
@@ -477,6 +526,7 @@ binary_sensor:
       - ON for at most 0.5s
       - OFF for at least 0.4s
       then:
+        - script.execute: lastAction
         - logger.log: "Single Click"
         - if:
             condition:
@@ -523,6 +573,7 @@ binary_sensor:
     internal: true
     on_press:
       then:
+        - script.execute: lastAction
         - logger.log: "Next Page"
         - if:
             condition:
@@ -575,30 +626,60 @@ binary_sensor:
                                 - script.execute: pageSelectClimate
 
 script:
+  - id: pageSelect
+    then:
+      - display.page.show: pageReturning
+      - delay: 0.8s
+      - display.page.show: page${defaultScreen}
+      - script.execute: pageSelect${defaultScreen}
+      
   - id: pageSelectMedia
     then:
       - logger.log: "Switched to MEDIA page"
+      - lambda: 'id(ignoreAction) = 1;'
       - sensor.rotary_encoder.set_value:
           id: rotary_dial
           value: !lambda 'return id(media_volume).state;'
+      - delay: 0.1s
+      - lambda: 'id(ignoreAction) = 0;'
           
   - id: pageSelectBrightness
     then:
       - logger.log: "Switched to BRIGHTNESS page"
+      - lambda: 'id(ignoreAction) = 1;'
       - sensor.rotary_encoder.set_value:
           id: rotary_dial
           value: !lambda 'return id(brightness).state;'
+      - delay: 0.1s
+      - lambda: 'id(ignoreAction) = 0;'
 
   - id: pageSelectWarmth
     then:
       - logger.log: "Switched to WARMTH page"
+      - lambda: 'id(ignoreAction) = 1;'
       - sensor.rotary_encoder.set_value:
           id: rotary_dial
           value: !lambda 'return id(warmth).state;'
+      - delay: 0.1s
+      - lambda: 'id(ignoreAction) = 0;'
           
   - id: pageSelectClimate
     then:
       - logger.log: "Switched to CLIMATE page"
+      - lambda: 'id(ignoreAction) = 1;'
       - sensor.rotary_encoder.set_value:
           id: rotary_dial
           value: !lambda 'return id(climate_setpoint).state;'
+      - delay: 0.1s
+      - lambda: 'id(ignoreAction) = 0;'
+
+  - id: lastAction
+    then:
+      - if:
+          condition:
+            lambda: 'return id(ignoreAction) == 0;'
+          then:
+            - lambda: 'id(oneShot) = 1;'
+            - lambda: 'id(lastAct) = id(uptimeSecs);'
+          else:
+            - logger.log: "Action IGNORED!"
