@@ -83,7 +83,7 @@ font:
     id: title_font_bold
     size: 16
     glyphs: "ios."
-  - file: "fonts/Paul.ttf"
+  - file: "fonts/LiberationSans-Regular.ttf"
     id: standard_font
     size: 26
     glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."

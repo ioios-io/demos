@@ -47,6 +47,8 @@ binary_sensor:
 Use the min/max sensor with the type `mean`.
 * Add as many sensors as you have in the room.
 * Off-line entities do not drag down the average.
+
+**IMPORTANT!** The IDs `living_room_climate_heating`, `living_room_climate_setpoint` & `living_room_climate_temperature` must all be constructed from the id of the `climate` followed by _climate_heating, _climate_setpoint, etc.
 ___
 Use template sensor to grab the climate’s target & current temperature.
 * Using a template we store it with 0 and 1 decimal places respectively.

@@ -97,11 +97,11 @@ font:
     id: title_font_bold
     size: 16
     glyphs: "ios."
-  - file: "fonts/Paul.ttf"
+  - file: "fonts/LiberationSans-Bold.ttf"
     id: small_font
     size: 16
-    glyphs: ":!0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
-  - file: "fonts/Paul.ttf"
+    glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+  - file: "fonts/LiberationSans-Regular.ttf"
     id: standard_font
     size: 26
     glyphs: ":/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
@@ -150,10 +150,10 @@ display:
             if (id(media_state).state == "playing" || id(media_state).state == "paused") {
               if (id(media_state).state == "playing") {
                   it.image(4, 24, id(play_image));
-                  it.printf(34, 41, id(standard_font), "PLAYING");
+                  it.printf(34, 41, id(standard_font), "Playing");
               } else {
                   it.image(4, 24, id(pause_image));
-                  it.printf(34, 41, id(standard_font), "PAUSED");
+                  it.printf(34, 41, id(standard_font), "Paused");
               }
               it.image(0, 0, id(volume_image));
               it.rectangle(20, 0, 102, 16);
