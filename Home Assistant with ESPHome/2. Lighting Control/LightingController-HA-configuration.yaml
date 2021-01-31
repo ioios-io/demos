@@ -15,9 +15,9 @@ sensor:
       living_room_lights_warmth:
         friendly_name: 'Living Room Warmth'
         value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | int | round(0) }}"
-        
-  - platform: template
-    sensors: 
+        icon_template: "mdi:invert-colors"
+
       living_room_lights_brightness:
         friendly_name: 'Living Room Brightness'
         value_template: "{{ state_attr('light.living_room_lights', 'brightness') | int | round(0) }}"
+        icon_template: "mdi:brightness-5"

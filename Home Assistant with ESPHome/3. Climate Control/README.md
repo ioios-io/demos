@@ -26,14 +26,18 @@ sensor:
       - sensor.living_room_pithy_screen_temperature
 
   - platform: template
-    sensors: 
-      living_room_climate_temperature:
-        friendly_name: Living Room Climate Temperature
-        value_template: "{{ state_attr('climate.living_room', 'current_temperature') | round(1) }}"
+    sensors:
       living_room_climate_setpoint:
-        friendly_name: 'Living Room Climate Setpoint'
-        unit_of_measurement: '°C'
-        value_template: "{{ state_attr('climate.living_room', 'temperature') | round(0) }}"
+        friendly_name: "Living Room Climate Setpoint"
+        unit_of_measurement: "°C"
+        value_template: "{{ state_attr('climate.living_room', 'temperature') | int | round(0) }}"
+        icon_template: "mdi:thermometer-plus"
+    
+      living_room_climate_temperature:
+        friendly_name: "Living Room Climate Current Temperature"
+        unit_of_measurement: "°C"
+        value_template: "{{ state_attr('climate.living_room', 'current_temperature') | float | round(1) }}"
+        icon_template: "mdi:thermometer"
 
 binary_sensor:
   - platform: template

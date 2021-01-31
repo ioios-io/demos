@@ -31,17 +31,27 @@ binary_sensor:
         device_class: heat
         value_template: >-
           {{ state_attr('climate.living_room', 'hvac_action') | string == "heating" }}
+        icon_template: >-
+          {% if state_attr('climate.living_room', 'hvac_action') | string == "heating" %}
+            mdi:radiator
+          {% else %}
+            mdi:radiator-disabled
+          {% endif %}
 
 sensor:
   - platform: template
     sensors:
-      living_room_climate_temperature:
-        friendly_name: Living Room Climate Temperature
-        value_template: "{{ state_attr('climate.living_room', 'current_temperature') | round(1) }}"
       living_room_climate_setpoint:
-        friendly_name: 'Living Room Climate Setpoint'
-        unit_of_measurement: '°C'
-        value_template: "{{ state_attr('climate.living_room', 'temperature') | round(0) }}"
+        friendly_name: "Living Room Climate Setpoint"
+        unit_of_measurement: "°C"
+        value_template: "{{ state_attr('climate.living_room', 'temperature') | int | round(0) }}"
+        icon_template: "mdi:thermometer-plus"
+    
+      living_room_climate_temperature:
+        friendly_name: "Living Room Climate Current Temperature"
+        unit_of_measurement: "°C"
+        value_template: "{{ state_attr('climate.living_room', 'current_temperature') | float | round(1) }}"
+        icon_template: "mdi:thermometer"
 
   - platform: min_max
     name: “Living Room Average Temperature"
@@ -56,12 +66,16 @@ sensor:
       living_room_sonos_volume:
         friendly_name: 'Living Room Sonos Volume'
         value_template: "{{ state_attr('media_player.living_room_sonos', 'volume_level') * 100 | round(0) }}"
+        unit_of_measurement: '%'
 
   - platform: template
     sensors: 
       living_room_lights_warmth:
         friendly_name: 'Living Room Warmth'
-        value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | round(0) }}"
+        value_template: "{{ state_attr('light.living_room_lights', 'color_temp') | int | round(0) }}"
+        icon_template: "mdi:invert-colors"
+
       living_room_lights_brightness:
         friendly_name: 'Living Room Brightness'
-        value_template: "{{ state_attr('light.living_room_lights', 'brightness') | round(0) }}"
+        value_template: "{{ state_attr('light.living_room_lights', 'brightness') | int | round(0) }}"
+        icon_template: "mdi:brightness-5"
