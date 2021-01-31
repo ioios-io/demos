@@ -4,11 +4,11 @@
 In the ESPHome files included with these tutorials, we make use of two features which make life a lot easier. Not just to write but also easier to share and easier to update: [secrets](https://esphome.io/guides/faq.html#tips-for-using-esphome) and [substitutions](https://esphome.io/guides/configuration-types.html#config-substitutions).
 
 #### Secrets
-We use secrets so that we can reference sensitive data stored elsewhere rather than type our Wifi password in plain text in the YAML file.
-Secrets File: `wifiPass: mypassword`
-YAML File: `password: !secret wifiPass`
+We use secrets so that we can reference sensitive data stored elsewhere rather than type our Wifi password in plain text in the YAML file.<br>
+Secrets File: `wifiPass: mypassword`<br>
+YAML File: `password: !secret wifiPass`<br>
 
-ESPHome has a built-in Secrets Editor.
+**ESPHome has a built-in Secrets Editor.**
 ![ESPHome Secrets Option](https://github.com/ioios-io/demos/raw/main/Home%20Assistant%20with%20ESPHome/assets/ESPHomeSecrets.png)
 
 #### Substitutions

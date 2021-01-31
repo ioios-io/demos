@@ -17,7 +17,7 @@ All 3 functions are intended to be useful, **additional** controls for existing 
 
 All 3 also rely on generic and standard Home Assistant components. For instance, when writing this I was using a Sonos speaker but because the play/plause and volume control are all handled by HA's `media_player` it doesn't matter to where the media is going.
 
-So the climate controls uses the `generic_thermostat`, the media player uses the `media_player` and the lighting control using `light_group` and `scenes`.
+So the climate controls uses the `generic_thermostat`, the media player uses the `media_player` and the lighting control uses `light_group` and `scenes`.
 
 ## Actions
 The menu system requires a switch to scroll through the menus and each function has an additional switch which we refer to as the action switch.
