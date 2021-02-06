@@ -6,7 +6,7 @@ This will explain what is happening at the top of each YAML file and that is the
 Once we have created our ESPHome files, this guide walks you through how to get them onto your devices.
 
 ___
-[![Video Demo on Youtube](http://img.youtube.com/vi/5A1yOkjg-H0/0.jpg)](https://youtu.be/5A1yOkjg-H0 "View Demo Video on YouTube")
+[![Video Demo on Youtube](https://img.youtube.com/vi/5A1yOkjg-H0/0.jpg)](https://youtu.be/5A1yOkjg-H0 "View Demo Video on YouTube")
 
 ## Project Overview
 In 3 stages we're going to add the following functionality:
