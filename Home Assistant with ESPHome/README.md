@@ -6,6 +6,7 @@ This will explain what is happening at the top of each YAML file and that is the
 Once we have created our ESPHome files, this guide walks you through how to get them onto your devices.
 
 ___
+[![Video Demo on Youtube](http://img.youtube.com/vi/5A1yOkjg-H0/0.jpg)](https://youtu.be/5A1yOkjg-H0 "View Demo Video on YouTube")
 
 ## Project Overview
 In 3 stages we're going to add the following functionality:
@@ -19,6 +20,8 @@ All 3 also rely on generic and standard Home Assistant components. For instance,
 
 So the climate controls uses the `generic_thermostat`, the media player uses the `media_player` and the lighting control uses `light_group` and `scenes`.
 
+### HELP US!
+We are requesting a feature in ESPHome which would simplfy the processes which follow greatly. Please lend your support on GitHub by giving a thumbs up to [Mikosoft83's post](https://github.com/esphome/feature-requests/issues/1112). Thank you!
 ## Actions
 The menu system requires a switch to scroll through the menus and each function has an additional switch which we refer to as the action switch.
 
@@ -28,20 +31,19 @@ The menu system requires a switch to scroll through the menus and each function 
 | Smart Lights    | Scene/Off    | Brightness/Warmth  |
 | Climate Control | Power On/Off | Target Temperature |
 
-
 ## Screen or NeoPixel Ring
-These guides are written primarily to make the best use of ioios.io devices such as the Pithy range or the Counter range. Not all devices have a screen, the Pithy Pixel for instance has a 16 LED ring for display purposes and so each function must also be able to represent itself via these NeoPixels.
+These guides are written primarily to make the best use of **[ioios.io](https://ioios.io)** devices such as the [Pithy range](https://ioios.io/products/pithy) or the [Counter range](https://ioios.io/products/counter). Not all devices have a screen, the Pithy Pixel for instance has a 16 LED ring for display purposes and so each function must also be able to represent itself via these NeoPixels.
 
 ## Just a Dial?
 Each separate function can wotk individually without a means to display status, it simply acts an input dial. For instance, as a light controller is would control the brightness, as a media controller it would be a volume control.
 See the `***-ESPHome-PithyDial.yaml` file for just the dial configuration.
 
 ## 1) [Media Controller](https://github.com/ioios-io/demos/tree/main/Home%20Assistant%20with%20ESPHome/1.%20Media%20Control)
-To use this function you will need to supply just one entity to ESPHome `media_player`. We also need to add one `sensor` to your Home Assistant configuration to provide the volume as a percentage.
+To use this function you will need to supply just one entity to ESPHome: `media_player`. We also need to add one `sensor` to your Home Assistant configuration to provide the volume as a percentage.
 #### 1a) [Adding Alerts](https://github.com/ioios-io/demos/tree/main/Home%20Assistant%20with%20ESPHome/1a.%20Adding%20Alerts)
 Create some services to be called from HA for notifications purposes. Namely a door bell & a dinner time alert.
 ## 2) [Lighting Controller](https://github.com/ioios-io/demos/tree/main/Home%20Assistant%20with%20ESPHome/2.%20Lighting%20Control)
-This function relies on grouping lights and works best with smart bulbs with variable white warmth/coldness.
+This function relies on grouping lights and works best with smart bulbs with variable white warmth/coldness. We need to create two sensors in HA, one for each value.
 #### 2a) [Scenes & Consistency](https://github.com/ioios-io/demos/tree/main/Home%20Assistant%20with%20ESPHome/2a.%20Scenes%20%26%20Consistency)
 We add control of `scenes` via a multi-click button. These scenes are not just limited to lights, items such as blinds, projectors, anything!
 #### 2b) [Combining Phases 1 & 2](https://github.com/ioios-io/demos/tree/main/Home%20Assistant%20with%20ESPHome/2b.%20Lights%20and%20Media%20Combined)
@@ -51,7 +53,7 @@ To use this function you will need to supply the entity `climate` to ESPHome.
 We need to define 2 extra `sensors` in HA to provide an average temperature and also the target temperature to send to the ESPs.
 
 ## 4) [All-In-One](https://github.com/ioios-io/demos/tree/main/Home%20Assistant%20with%20ESPHome/4.%20All-In-One)
-Combining all of the above functions into one device.
+Combining all of the above functions into one device. Currently only for Pithy Screens.
 
 
 ## Credit & Thanks
