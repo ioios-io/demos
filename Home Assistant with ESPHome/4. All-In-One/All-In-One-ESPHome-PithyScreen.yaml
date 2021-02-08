@@ -9,11 +9,11 @@ substitutions:
   climate: living_room # ID OF THERMOSTAT IN HA
   
    # CUSTOM OPTIONS
-  alertTimeout: 10s # NUMBER OF SECONDS THE ALRTS WILL BE SHOWN
+  alertTimeout: 10s # NUMBER OF SECONDS THE ALERTS WILL BE SHOWN
   climateLower: '10' # CLIMATE LOWER LIMIT
   climateUpper: '30' # CLIMATE UPPER LIMIT
   defaultScreen: Media # VALUES COULD BE Media, Brightness, Warmth or Climate
-  defaultReturn: '6' # NUMBER OF SECONDS BEFORE SCREEN RETURNS TO DEFAULT
+  defaultReturn: '15' # NUMBER OF SECONDS BEFORE SCREEN RETURNS TO DEFAULT
   
   # SWITCH MAPPING. SELECT THE SWITCH FOR EACH ACTION
   switchMenu: ${sideSwitch}
@@ -188,10 +188,10 @@ display:
             if (id(media_state).state == "playing" || id(media_state).state == "paused") {
               if (id(media_state).state == "playing") {
                   it.image(4, 24, id(play_image));
-                  it.printf(34, 41, id(standard_font), "Playing");
+                  it.printf(34, 41, id(standard_font), TextAlign::CENTER_LEFT, "Playing");
               } else {
                   it.image(4, 24, id(pause_image));
-                  it.printf(34, 41, id(standard_font), "Paused");
+                  it.printf(34, 41, id(standard_font), TextAlign::CENTER_LEFT, "Paused");
               }
               it.image(0, 0, id(volume_image));
               it.rectangle(20, 0, 102, 16);
@@ -631,6 +631,7 @@ script:
       - display.page.show: pageReturning
       - delay: 0.8s
       - display.page.show: page${defaultScreen}
+      - delay: 0.4s
       - script.execute: pageSelect${defaultScreen}
       
   - id: pageSelectMedia
