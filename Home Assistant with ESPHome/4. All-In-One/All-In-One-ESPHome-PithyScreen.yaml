@@ -58,12 +58,12 @@ esphome:
           state: OFF
       - wait_until:
           api.connected
-      - delay: 15s
+      - delay: 10s
+      - display.page.show: page${defaultScreen}
+      - script.execute: pageSelect${defaultScreen}
       - binary_sensor.template.publish:
           id: api_connected
           state: ON
-      - display.page.show: page${defaultScreen}
-      - script.execute: pageSelect${defaultScreen}
 
 wifi:
   ssid: ${wifiSSID}
@@ -290,7 +290,7 @@ interval:
       - lambda: 'id(uptimeSecs) += 1;'
       - if:
           condition: 
-              lambda: 'return (id(uptimeSecs) > (id(lastAct) + ${defaultReturn})) && id(oneShot) == 1;'
+              lambda: 'return (id(uptimeSecs) > (id(lastAct) + ${defaultReturn})) && (id(oneShot) == 1 && id(api_connected));'
           then:
             - logger.log: "Returning To Default Page"
             - lambda: 'id(oneShot) = 0;'
@@ -629,7 +629,7 @@ script:
   - id: pageSelect
     then:
       - display.page.show: pageReturning
-      - delay: 0.8s
+      - delay: 1.3s
       - display.page.show: page${defaultScreen}
       - delay: 0.4s
       - script.execute: pageSelect${defaultScreen}
