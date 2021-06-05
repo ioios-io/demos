@@ -1,8 +1,5 @@
 ## Example #4: All-In-One
-#### Using Home Assistant & ESPHome
-
-*The files used in the demonstration can be found in our [Github repository](https://github.com/ioios-io/demos).*
-
+###### Using Home Assistant & ESPHome
 ## Function
 Here we combine all the previous functions into one. So, via 4 menus/displays we will cover the following:
 1. Media Controller

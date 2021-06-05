@@ -81,12 +81,12 @@ api:
       then:
         - display.page.show: pageDoorbell
         - delay: ${alertTimeout}
-        - display.page.show: pageMedia
+        - display.page.show: pageMain
     - service: alert_dinnertime
       then:
         - display.page.show: pageDinnerTime
         - delay: ${alertTimeout}
-        - display.page.show: pageMedia
+        - display.page.show: pageMain
 
 font:
   - file: "fonts/LiberationSans-Regular.ttf"

@@ -1,8 +1,5 @@
 ## Example #3: Climate Control
-#### Using Home Assistant & ESPHome
-
-*The files used in the demonstration can be found in our [Github repository](https://github.com/ioios-io/demos).*
-
+###### Using Home Assistant & ESPHome
 ## Function
 Using the `generic_thermostat` component in HA we will configure two Pithy devices to be thermostats in the same room. That means that each device can set and view the current temperature and also each device feeds their temperature reading into an average for the room.
 
